@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>內惟‧雄影小幫手</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Huninn&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FBFAF7; --ink:#34403D; --head:#2E4A45; --tint:#EEF3F1;
+  --round:"Huninn","jf open 粉圓 2.0","jf-openhuninn-2.0","Arial Rounded MT Bold","PingFang TC","Microsoft JhengHei",sans-serif; --muted:#6E6D68; --line:#E4E2DC;
+  --pine:#1F4D46; --pine-soft:#E4EEEA; --heart:#B8434A; --clash:#B23B32; --tight:#A9641E;
+  --card:#FFFFFF; --kfa:#1F4D46; --nwac:#5B4A86;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#141615; --ink:#E4E6E2; --head:#CFE3DD; --tint:#1F2B28; --muted:#9A9993; --line:#2E3230;
+    --pine:#5FA597; --pine-soft:#1C2A27; --heart:#D9707A; --clash:#E0766C; --tight:#D8A05E;
+    --card:#1B1E1D; --kfa:#5FA597; --nwac:#A99AD6;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141615; --ink:#E4E6E2; --head:#CFE3DD; --tint:#1F2B28; --muted:#9A9993; --line:#2E3230;
+  --pine:#5FA597; --pine-soft:#1C2A27; --heart:#D9707A; --clash:#E0766C; --tight:#D8A05E;
+  --card:#1B1E1D; --kfa:#5FA597; --nwac:#A99AD6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  background:var(--paper);color:var(--ink);line-height:1.6;font-size:15px;
+  padding-bottom:96px;
+}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+.narrow{max-width:640px}
+#paneList{max-width:640px;margin:0 auto}
+.num{font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit}
+
+header{padding:28px 0 18px;border-bottom:1px solid var(--line);margin-bottom:18px}
+h1{font-family:var(--round);font-size:30px;font-weight:400;letter-spacing:.04em;color:var(--head)}
+.tab,.venue,.dchip .d,.btn{font-family:var(--round)}
+.sub{color:var(--muted);font-size:13px;margin-top:4px;flex:1;min-width:0}
+.headrow{display:flex;gap:12px;align-items:flex-start}
+.swap{flex:none;margin-top:2px;padding:4px 12px;border:1px solid var(--line);border-radius:999px;font-family:var(--round);font-size:12.5px;cursor:pointer;background:var(--card)}
+.swap:focus-within{outline:2px solid var(--pine);outline-offset:2px}
+
+.tabs{display:flex;gap:4px;margin-bottom:18px}
+.tab{flex:1;padding:10px;border:1px solid var(--line);background:transparent;border-radius:999px;font-size:14px;color:var(--muted);cursor:pointer}
+.tab[aria-selected="true"]{background:var(--pine);border-color:var(--pine);color:var(--paper)}
+.tab .badge{display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;border-radius:9px;background:var(--paper);color:var(--pine);font-size:11.5px;line-height:18px}
+.tab:not([aria-selected="true"]) .badge{background:var(--line);color:var(--ink)}
+
+/* 影院切換 */
+.venues{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.venue{padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card);font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.venue .dot{width:8px;height:8px;border-radius:50%}
+.venue[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+
+/* 日期橫列 */
+.days{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;scrollbar-width:thin}
+.dchip{flex:none;width:52px;padding:6px 0;border:1px solid var(--line);border-radius:16px;background:var(--card);text-align:center;cursor:pointer;line-height:1.25}
+.dchip .m{display:block;font-size:11px;color:var(--muted)}
+.dchip .d{display:block;font-size:19px;font-weight:400}
+.dchip .w{display:block;font-size:11.5px;color:var(--muted)}
+.dchip.past:not([aria-pressed="true"]){opacity:.5}
+.dchip.today .m{color:var(--pine);font-weight:600}
+.dchip[aria-pressed="true"]{background:var(--pine);border-color:var(--pine);color:var(--paper)}
+.dchip[aria-pressed="true"] .m,.dchip[aria-pressed="true"] .w{color:var(--paper)}
+.dchip.all{width:auto;padding:6px 14px;font-family:var(--round);display:flex;align-items:center;font-size:13.5px}
+
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px;max-width:640px}
+.filters label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+select,input[type=search]{width:100%;padding:9px 14px;font:inherit;font-size:14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}
+select:focus,input:focus{outline:2px solid var(--pine);outline-offset:-1px}
+
+.count{font-size:13px;color:var(--muted);margin:14px 0 8px}
+.dayhead{font-size:13px;font-weight:600;margin:18px 0 8px;color:var(--muted)}
+.row{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer}
+.row[data-picked="1"]{border-color:var(--pine);background:var(--pine-soft)}
+.row.gone{opacity:.55}
+.row .when{min-width:54px;font-size:17px;font-weight:600;line-height:1.35}
+.row .when small{display:block;font-size:11.5px;font-weight:400;color:var(--muted)}
+.row .body{flex:1;min-width:0}
+.title{font-family:var(--round);font-weight:400;font-size:15.5px;color:var(--head);word-break:break-word;display:block}
+.title .en{display:block;font-weight:400;font-size:12.5px;color:var(--muted)}
+.meta{display:block;font-size:12.5px;color:var(--muted);margin-top:3px}
+.meta .v{display:inline-flex;align-items:center;gap:5px}
+.meta .v::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c)}
+.mark{width:22px;height:22px;flex:none;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:13px;color:transparent;margin-top:2px}
+.row[data-picked="1"] .mark{background:var(--pine);border-color:var(--pine);color:var(--paper)}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.tag{font-size:11px;padding:1px 6px;border:1px solid var(--line);border-radius:4px;color:var(--muted)}
+.tag.ev{border-color:var(--tight);color:var(--tight)}
+
+
+/* ---------- 場次總表 ---------- */
+.sheet{margin:14px 0 40px}
+.sheethead{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 16px;color:var(--head);font-family:var(--round);font-weight:400}
+.sheethead .d{font-size:36px;line-height:1;letter-spacing:.03em}
+.sheethead .w{font-size:13px;letter-spacing:.12em;padding:3px 10px;border-radius:999px;background:var(--tint)}
+.sheethead .t{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--pine);color:var(--paper)}
+.gridscroll{overflow-x:auto;margin:0 -16px;padding:2px 16px 8px;-webkit-overflow-scrolling:touch}
+.grid{display:grid;grid-template-columns:repeat(var(--cols),minmax(190px,1fr));gap:8px 12px;min-width:min-content}
+.gh{background:var(--tint);color:var(--head);text-align:center;padding:12px 10px 11px;border-radius:18px;line-height:1.35;margin-bottom:4px}
+.gh b{display:block;font-family:var(--round);font-weight:400;font-size:16px;letter-spacing:.02em}
+.gh span{display:block;font-size:11px;color:var(--muted);margin-top:1px}
+.gh em{display:inline-block;font-style:normal;font-size:11px;margin-top:6px;padding:1px 9px;border-radius:999px;background:var(--card);color:var(--tight)}
+
+.cell{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:var(--card);cursor:pointer;min-width:0;min-height:88px}
+.cell .ct{flex:none;min-width:44px;font-family:var(--round);font-size:16px;color:var(--pine);line-height:1.2;text-align:center}
+.cell .ct small{display:block;font-family:inherit;font-size:11px;color:var(--muted);margin-top:4px}
+.cell .ct .ok{display:none;margin:7px auto 0;width:20px;height:20px;border-radius:50%;background:var(--pine);color:var(--paper);font-size:11px;line-height:20px}
+.cell .cb{flex:1;display:flex;flex-direction:column;min-width:0;align-self:stretch}
+.cn{font-family:var(--round);font-size:15px;line-height:1.45;color:var(--head);word-break:break-word}
+.ce{font-size:11.5px;line-height:1.4;color:var(--muted);margin-top:1px;word-break:break-word}
+.cf{margin-top:auto;padding-top:8px;font-size:11px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.cf .ev{padding:0 7px;border-radius:999px;background:#F6EBDD;color:var(--tight)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .cf .ev{background:#3A2E20} }
+:root[data-theme="dark"] .cf .ev{background:#3A2E20}
+.cell:hover{border-color:var(--pine)}
+.cell[data-picked="1"]{background:var(--pine-soft);border-color:var(--pine)}
+.cell[data-picked="1"] .ct .ok{display:block}
+.cell.gone{opacity:.55}
+.cell.dim{opacity:.35}
+.cell.empty{cursor:default;background:transparent;border:1.5px dashed var(--line)}
+.cell.off{align-items:center;justify-content:center;text-align:center;font-family:var(--round);color:var(--muted);font-size:14px;line-height:1.7}
+.cell:focus-visible{outline:2px solid var(--pine);outline-offset:2px}
+@media(prefers-reduced-motion:no-preference){ .cell{transition:border-color .15s,background .15s} }
+@media (max-width:520px){
+  .grid{grid-template-columns:repeat(var(--cols),minmax(172px,1fr));gap:8px 10px}
+  .cell{padding:11px 12px;gap:10px}
+  .cn{font-size:14.5px}
+}
+
+/* ---------- 選電影 ---------- */
+#paneFilms{max-width:640px;margin:0 auto}
+.intro{font-size:13.5px;color:var(--muted);margin-bottom:14px}
+.toggles{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.tg{padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card);font-size:12.5px;color:var(--muted);cursor:pointer}
+.tg[aria-pressed="true"]{border-color:var(--pine);color:var(--pine);background:var(--pine-soft)}
+.tg:focus-visible,.heart:focus-visible,.add:focus-visible,.more:focus-visible{outline:2px solid var(--pine);outline-offset:2px}
+
+
+.film{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:10px}
+.film[data-liked="1"]{border-color:#E4B9BC}
+.film.gone{opacity:.55}
+.fhead{display:flex;gap:12px;align-items:flex-start}
+.fbody{flex:1;min-width:0}
+.ftitle{font-family:var(--round);font-size:17px;line-height:1.4;color:var(--head);text-decoration:none}
+a.ftitle:hover{text-decoration:underline;text-underline-offset:3px}
+.fen{display:block;font-size:12px;color:var(--muted);word-break:break-word}
+.fmeta{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:6px;font-size:11.5px}
+.chip{padding:1px 8px;border-radius:999px;background:var(--tint);color:var(--muted)}
+.chip.k{background:var(--pine-soft);color:var(--pine)}
+.chip.ev{background:#F6EBDD;color:var(--tight)}
+.fstate{margin-top:8px;font-size:12.5px;color:var(--muted)}
+.fstate b{font-weight:400;color:var(--pine)}
+.fstate .urgent{color:var(--tight)}
+.heart{flex:none;width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);background:var(--card);font-size:19px;line-height:1;color:var(--line);cursor:pointer;display:grid;place-items:center}
+.heart[aria-pressed="true"]{border-color:var(--heart);background:var(--heart);color:#fff}
+.more{margin-top:8px;background:none;border:0;padding:0;font-size:13px;color:var(--pine);cursor:pointer;font-family:var(--round)}
+.shows{list-style:none;margin-top:10px;border-top:1px dashed var(--line)}
+.shows li{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line)}
+.shows li:last-child{border-bottom:0}
+.shows li.past{background:var(--tint);border-radius:12px;padding-left:10px;padding-right:10px;margin:4px 0;border-bottom-color:transparent}
+.shows li.past .t,.shows li.past .t small,.shows li.past .i{color:var(--muted)}
+.add[data-past="1"][disabled]{border-color:var(--line);color:var(--muted);background:transparent;cursor:default}
+.shows .t{min-width:92px;font-family:var(--round);color:var(--head);line-height:1.35}
+.shows .t small{display:block;font-family:inherit;font-size:11.5px;color:var(--muted)}
+.shows .i{flex:1;min-width:0;font-size:12.5px;color:var(--muted);line-height:1.45}
+.shows .i .bad{color:var(--clash)}
+.shows .i .warn{color:var(--tight)}
+.add{flex:none;padding:6px 14px;border-radius:999px;border:1px solid var(--pine);background:var(--card);color:var(--pine);font-size:13px;cursor:pointer;white-space:nowrap;font-family:var(--round)}
+.add[data-on="1"]{background:var(--pine);color:var(--paper)}
+.add[data-hit="bad"]:not([data-on="1"]){border-color:var(--clash);color:var(--clash)}
+
+/* 總表裡的喜歡與撞場提示 */
+.cn .lv{color:var(--heart);margin-right:3px}
+.cell[data-hit="bad"]:not([data-picked="1"]){border-color:#E7C3BF;background:#FDF7F6}
+.cell[data-hit="warn"]:not([data-picked="1"]){border-color:#EBD6BC}
+.cf .hit{color:var(--clash)}
+.cf .hit.w{color:var(--tight)}
+
+
+/* ---------- 輸出對話框 ---------- */
+dialog{margin:auto;max-height:calc(100% - 24px);overflow:auto;border:0;border-radius:24px;padding:0;max-width:min(620px,calc(100% - 24px));width:100%;color:var(--ink);background:var(--paper);box-shadow:0 16px 48px rgba(22,22,26,.22)}
+dialog::backdrop{background:rgba(22,22,26,.42)}
+.dlg{padding:20px 22px 22px}
+.dlghead{display:flex;justify-content:space-between;align-items:center}
+.dlghead h2{font-family:var(--round);font-weight:400;font-size:22px;color:var(--head)}
+.dlgsub{font-size:13px;color:var(--muted);margin:2px 0 14px}
+.dlgform{max-width:none}
+.imgout{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-top:10px}
+.imgout.wide{grid-template-columns:1fr}
+.imgout > p{grid-column:1/-1}
+.imgout figure{margin:0}
+.imgout img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:14px;background:#fff}
+.imgout figcaption{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:6px}
+.dlgfoot{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px dashed var(--line)}
+.linkbtn{background:none;border:0;padding:0;font-size:13px;color:var(--pine);text-decoration:underline;cursor:pointer;font-family:var(--round)}
+.linkbtn:focus-visible{outline:2px solid var(--pine);outline-offset:2px}
+
+.planbar{display:flex;gap:8px;justify-content:flex-end;margin:-4px 0 16px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--pine);font-family:var(--round);font-size:13px;cursor:pointer}
+.pill span{font-size:12px}
+.pill:hover:not([disabled]){border-color:var(--pine)}
+.pill[disabled]{color:var(--muted);cursor:default;opacity:.6}
+.pill:focus-visible{outline:2px solid var(--pine);outline-offset:2px}
+
+/* 片單 */
+.day{margin-bottom:26px}
+.day h2{font-family:var(--round);font-size:17px;font-weight:400;color:var(--head);margin-bottom:10px}
+.slot{display:flex;gap:12px;align-items:stretch}
+.rail{min-width:54px;padding-top:12px;font-size:15px;font-weight:600}
+.rail .end{display:block;font-size:12px;font-weight:400;color:var(--muted)}
+.slot .card{flex:1;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--c,var(--pine));border-radius:8px;padding:11px 13px;min-width:0}
+.slot.bad .card{border-left-color:var(--clash)}
+.acts{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:12.5px}
+.acts a{color:var(--pine)}
+.drop{background:none;border:none;font-size:12.5px;color:var(--clash);cursor:pointer;text-decoration:underline;padding:0}
+.gap{display:flex;gap:12px;align-items:center;font-size:12.5px;padding:6px 0}
+.gap .rail{padding:0}
+.gap .txt{flex:1;color:var(--muted)}
+.gap.warn .txt{color:var(--tight);font-weight:600}
+.gap.bad .txt{color:var(--clash);font-weight:600}
+
+.dock{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:12px 0}
+.dock .wrap{display:flex;gap:10px;align-items:center}
+.dock .n{flex:1;font-size:13.5px;min-width:0}
+.dock .n.bad{color:var(--clash);font-weight:600}
+.dock .n.warn{color:var(--tight);font-weight:600}
+.btn{padding:10px 16px;border:none;border-radius:999px;background:var(--pine);color:var(--paper);font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn[disabled]{background:var(--line);color:var(--muted);cursor:default}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);font-weight:400}
+.btn.ghost[disabled]{color:var(--muted)}
+.tab:focus-visible,.row:focus-visible,.btn:focus-visible,.venue:focus-visible,.dchip:focus-visible,.drop:focus-visible{outline:2px solid var(--pine);outline-offset:2px}
+
+.empty{text-align:center;color:var(--muted);padding:48px 20px;font-size:14px}
+.empty strong{display:block;color:var(--ink);font-size:16px;margin-bottom:6px}
+.hide{display:none!important}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);text-align:center;background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none}
+.toast.on{opacity:1}
+@media(prefers-reduced-motion:no-preference){
+  .row{transition:border-color .12s,background .12s}
+  .toast{transition:opacity .2s}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>內惟‧雄影小幫手</h1>
+    <div class="headrow">
+      <p class="sub" id="dataInfo">高雄市電影館、內惟藝術中心</p>
+      <label class="swap">換資料<input type="file" id="fileJson" accept=".json,application/json" class="hide"></label>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tabFilms" role="tab" aria-selected="true" aria-controls="paneFilms">選電影<span class="badge num hide" id="likeBadge"></span></button>
+    <button class="tab" id="tabFind" role="tab" aria-selected="false" aria-controls="paneFind">找場次</button>
+    <button class="tab" id="tabList" role="tab" aria-selected="false" aria-controls="paneList">我的片單<span class="badge num hide" id="tabBadge"></span></button>
+  </div>
+
+  <section id="paneFilms" role="tabpanel">
+    <p class="intro">把想看的片按 ♥ 收藏，點「看場次」就能直接加入片單。</p>
+
+    <div class="filters">
+      <div><label for="mText">找片名</label><input type="search" id="mText" placeholder="中文或英文片名"></div>
+      <div><label for="mSort">排序</label><select id="mSort">
+        <option value="soon">快下檔的在前</option>
+        <option value="few">剩餘場次少的在前</option>
+        <option value="title">片名</option>
+        <option value="long">片長由短到長</option>
+      </select></div>
+    </div>
+    <div class="toggles">
+      <button class="tg" id="mLiked" aria-pressed="false">♥ 只看喜歡的</button>
+      <button class="tg" id="mKfa" aria-pressed="false">只看高雄市電影館</button>
+      <button class="tg" id="mNwac" aria-pressed="false">只看內惟藝術中心</button>
+    </div>
+    <p class="count" id="filmCount"></p>
+    <div id="films"></div>
+  </section>
+
+  <section id="paneFind" role="tabpanel" class="hide">
+    <div class="venues" id="venues" aria-label="影院"></div>
+    <div class="days" id="days" aria-label="日期"></div>
+    <div class="filters">
+      <div><label for="fMovie">電影</label><select id="fMovie"></select></div>
+      <div><label for="fText">關鍵字</label><input type="search" id="fText" placeholder="中文或英文片名"></div>
+    </div>
+    <p class="count" id="count"></p>
+    <div id="results"></div>
+  </section>
+
+  <section id="paneList" role="tabpanel" class="hide">
+    <div class="planbar">
+      <button class="pill" id="btnShare" disabled><span aria-hidden="true">↗</span>分享行程</button>
+      <button class="pill" id="btnIcs" disabled><span aria-hidden="true">📅</span>輸出行事曆</button>
+    </div>
+    <div id="plan"></div>
+  </section>
+</div>
+
+<div class="dock">
+  <div class="wrap">
+    <span class="n" id="dockText">片單是空的</span>
+    <button class="btn ghost" id="btnClear" disabled>清空</button>
+  </div>
+</div>
+<dialog id="exportDlg" aria-labelledby="exportTitle">
+  <div class="dlg">
+    <div class="dlghead">
+      <h2 id="exportTitle">分享行程</h2>
+      <button class="linkbtn" id="exportClose" aria-label="關閉">關閉</button>
+    </div>
+    <p class="dlgsub">把片單存成圖片，傳給朋友或貼到社群。</p>
+    <div class="filters dlgform">
+      <div><label for="imgLayout">版面</label><select id="imgLayout">
+        <option value="list">清單（依日期排列）</option>
+        <option value="week">週曆（一張一週）</option>
+      </select></div>
+      <div><label for="imgDay">範圍</label><select id="imgDay"></select></div>
+      <div><label for="imgSize">尺寸</label><select id="imgSize">
+        <option value="portrait">直式 4:5（IG 貼文）</option>
+        <option value="square">方形 1:1</option>
+        <option value="story">直式 9:16（限時動態）</option>
+        <option value="landscape">橫式 16:9（電腦）</option>
+      </select></div>
+      <div id="wkStartBox" class="hide"><label for="imgWeekStart">每週從</label><select id="imgWeekStart">
+        <option value="1">週一開始</option>
+        <option value="0">週日開始</option>
+      </select></div>
+    </div>
+    <div id="imgOut" class="imgout" aria-live="polite"></div>
+    <div class="dlgfoot" id="shareFoot" hidden>
+      <button class="btn" id="imgShare">分享圖片</button>
+    </div>
+  </div>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const DATA = /*DATA_START*/[{"date":"2026-08-30","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"Last Man ー全盲搜查官ー 劇場版 Last Man FIRST LOVE","movie_id":"kfa-B229C5678e1b","runtime_minutes":126,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/B229C5678e1b","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-08-30T14:00:00+08:00","end_estimated":"2026-08-30T16:18:00+08:00","crosses_midnight":false,"actual_date":"2026-08-30"},{"date":"2026-08-30","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"那些山教我的事 Climbing For Life","movie_id":"kfa-a2eFe010Dd6C","runtime_minutes":131,"version":"一般","time":"16:40","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/a2eFe010Dd6C","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-08-30T16:40:00+08:00","end_estimated":"2026-08-30T19:03:00+08:00","crosses_midnight":false,"actual_date":"2026-08-30"},{"date":"2026-08-30","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"18顆鑽石 Diamonds","movie_id":"kfa-7Ac5dbff6026","runtime_minutes":135,"version":"一般","time":"19:30","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/7Ac5dbff6026","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-08-30T19:30:00+08:00","end_estimated":"2026-08-30T21:57:00+08:00","crosses_midnight":false,"actual_date":"2026-08-30"},{"date":"2026-09-01","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"18顆鑽石 Diamonds","movie_id":"kfa-88181DBb43aE","runtime_minutes":135,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/88181DBb43aE","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-01T14:00:00+08:00","end_estimated":"2026-09-01T16:27:00+08:00","crosses_midnight":false,"actual_date":"2026-09-01"},{"date":"2026-09-01","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"禍禍女 Mag Mag","movie_id":"kfa-5Dd67d1E88cd","runtime_minutes":113,"version":"一般","time":"16:40","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/5Dd67d1E88cd","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-01T16:40:00+08:00","end_estimated":"2026-09-01T18:45:00+08:00","crosses_midnight":false,"actual_date":"2026-09-01"},{"date":"2026-09-01","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"在世界的盡頭相遇 Meets the World","movie_id":"kfa-8A1793BA2e46","runtime_minutes":127,"version":"一般","time":"19:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/8A1793BA2e46","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-01T19:00:00+08:00","end_estimated":"2026-09-01T21:19:00+08:00","crosses_midnight":false,"actual_date":"2026-09-01"},{"date":"2026-09-02","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"禍禍女 Mag Mag","movie_id":"kfa-5Dd67d1E88cd","runtime_minutes":113,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/5Dd67d1E88cd","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-02T14:00:00+08:00","end_estimated":"2026-09-02T16:05:00+08:00","crosses_midnight":false,"actual_date":"2026-09-02"},{"date":"2026-09-02","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"炎上 BURN","movie_id":"kfa-c98171760DBc","runtime_minutes":103,"version":"一般","time":"16:30","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/c98171760DBc","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-02T16:30:00+08:00","end_estimated":"2026-09-02T18:25:00+08:00","crosses_midnight":false,"actual_date":"2026-09-02"},{"date":"2026-09-02","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"她復出的那天 The Day She Returns","movie_id":"kfa-31C3d6F037c8","runtime_minutes":84,"version":"一般","time":"19:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/31C3d6F037c8","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-02T19:00:00+08:00","end_estimated":"2026-09-02T20:36:00+08:00","crosses_midnight":false,"actual_date":"2026-09-02"},{"date":"2026-09-03","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"炎上 BURN","movie_id":"kfa-c98171760DBc","runtime_minutes":103,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/c98171760DBc","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-03T14:00:00+08:00","end_estimated":"2026-09-03T15:55:00+08:00","crosses_midnight":false,"actual_date":"2026-09-03"},{"date":"2026-09-03","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"禍禍女 Mag Mag","movie_id":"kfa-5Dd67d1E88cd","runtime_minutes":113,"version":"一般","time":"16:30","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/5Dd67d1E88cd","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-03T16:30:00+08:00","end_estimated":"2026-09-03T18:35:00+08:00","crosses_midnight":false,"actual_date":"2026-09-03"},{"date":"2026-09-03","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"八月三十一日，我在奧斯陸 Oslo, August 31st","movie_id":"kfa-1F0408464eBA","runtime_minutes":95,"version":"一般","time":"19:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/1F0408464eBA","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-03T19:00:00+08:00","end_estimated":"2026-09-03T20:47:00+08:00","crosses_midnight":false,"actual_date":"2026-09-03"},{"date":"2026-09-04","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"她復出的那天 The Day She Returns","movie_id":"kfa-31C3d6F037c8","runtime_minutes":84,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/31C3d6F037c8","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-04T14:00:00+08:00","end_estimated":"2026-09-04T15:36:00+08:00","crosses_midnight":false,"actual_date":"2026-09-04"},{"date":"2026-09-04","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"世界末日愛上你 Peak Everything","movie_id":"kfa-a63D3F4E22cc","runtime_minutes":100,"version":"一般","time":"16:30","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/a63D3F4E22cc","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-04T16:30:00+08:00","end_estimated":"2026-09-04T18:22:00+08:00","crosses_midnight":false,"actual_date":"2026-09-04"},{"date":"2026-09-04","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"驀然回首 Look Back","movie_id":"kfa-B7544D929672","runtime_minutes":57,"version":"一般","time":"19:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/B7544D929672","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-04T19:00:00+08:00","end_estimated":"2026-09-04T20:09:00+08:00","crosses_midnight":false,"actual_date":"2026-09-04"},{"date":"2026-09-05","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"炎上 BURN","movie_id":"kfa-c98171760DBc","runtime_minutes":103,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/c98171760DBc","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-05T14:00:00+08:00","end_estimated":"2026-09-05T15:55:00+08:00","crosses_midnight":false,"actual_date":"2026-09-05"},{"date":"2026-09-05","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"禍禍女 Mag Mag","movie_id":"kfa-5Dd67d1E88cd","runtime_minutes":113,"version":"一般","time":"17:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/5Dd67d1E88cd","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-05T17:00:00+08:00","end_estimated":"2026-09-05T19:05:00+08:00","crosses_midnight":false,"actual_date":"2026-09-05"},{"date":"2026-09-05","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"鯨魚馬戲團 4K修復 Werckmeister Harmonies 4K Restoration","movie_id":"kfa-39dE203134D9","runtime_minutes":145,"version":"一般","time":"19:20","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/39dE203134D9","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":["經典重映"],"version_unmapped":false,"start":"2026-09-05T19:20:00+08:00","end_estimated":"2026-09-05T21:57:00+08:00","crosses_midnight":false,"actual_date":"2026-09-05"},{"date":"2026-09-06","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"撒旦的探戈 4K修復（上） Sátántangó 4K Restoration Part I","movie_id":"kfa-33a0F51C5b51","runtime_minutes":137,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/33a0F51C5b51","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":["經典重映"],"version_unmapped":false,"start":"2026-09-06T14:00:00+08:00","end_estimated":"2026-09-06T16:29:00+08:00","crosses_midnight":false,"actual_date":"2026-09-06"},{"date":"2026-09-06","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"撒旦的探戈 4K修復（中）Sátántangó 4K Restoration Part II","movie_id":"kfa-1bd6bFfC4FA9","runtime_minutes":124,"version":"一般","time":"16:50","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/1bd6bFfC4FA9","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":["經典重映"],"version_unmapped":false,"start":"2026-09-06T16:50:00+08:00","end_estimated":"2026-09-06T19:06:00+08:00","crosses_midnight":false,"actual_date":"2026-09-06"},{"date":"2026-09-06","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"撒旦的探戈 4K修復（下）Sátántangó 4K Restoration Part III","movie_id":"kfa-4c9a5B4a49f3","runtime_minutes":177,"version":"一般","time":"19:20","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/4c9a5B4a49f3","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":["經典重映"],"version_unmapped":false,"start":"2026-09-06T19:20:00+08:00","end_estimated":"2026-09-06T22:29:00+08:00","crosses_midnight":false,"actual_date":"2026-09-06"},{"date":"2026-09-08","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"今晚我想來點棒的 Good Vibes Only Colour","movie_id":"kfa-087A78E044aA","runtime_minutes":90,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/087A78E044aA","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-08T14:00:00+08:00","end_estimated":"2026-09-08T15:42:00+08:00","crosses_midnight":false,"actual_date":"2026-09-08"},{"date":"2026-09-08","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"炎上 BURN","movie_id":"kfa-c98171760DBc","runtime_minutes":103,"version":"一般","time":"16:30","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/c98171760DBc","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-08T16:30:00+08:00","end_estimated":"2026-09-08T18:25:00+08:00","crosses_midnight":false,"actual_date":"2026-09-08"},{"date":"2026-09-08","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"世界上最爛的人 The Worst Person in the World","movie_id":"kfa-44D53E2dD3b0","runtime_minutes":128,"version":"一般","time":"19:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/44D53E2dD3b0","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-08T19:00:00+08:00","end_estimated":"2026-09-08T21:20:00+08:00","crosses_midnight":false,"actual_date":"2026-09-08"},{"date":"2026-09-09","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"炎上 BURN","movie_id":"kfa-c98171760DBc","runtime_minutes":103,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/c98171760DBc","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-09T14:00:00+08:00","end_estimated":"2026-09-09T15:55:00+08:00","crosses_midnight":false,"actual_date":"2026-09-09"},{"date":"2026-09-09","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"驀然回首 Look Back","movie_id":"kfa-B7544D929672","runtime_minutes":57,"version":"一般","time":"16:30","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/B7544D929672","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-09T16:30:00+08:00","end_estimated":"2026-09-09T17:39:00+08:00","crosses_midnight":false,"actual_date":"2026-09-09"},{"date":"2026-09-09","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"魯冰花（數位修復版）The Dull-Ice Flower","movie_id":"kfa-4Ca6C4038F70","runtime_minutes":99,"version":"一般","time":"19:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/4Ca6C4038F70","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":["經典重映"],"version_unmapped":false,"start":"2026-09-09T19:00:00+08:00","end_estimated":"2026-09-09T20:51:00+08:00","crosses_midnight":false,"actual_date":"2026-09-09"},{"date":"2026-09-10","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"最後的作業 Your Last Homework","movie_id":"kfa-279556068ECb","runtime_minutes":109,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/279556068ECb","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-10T14:00:00+08:00","end_estimated":"2026-09-10T16:01:00+08:00","crosses_midnight":false,"actual_date":"2026-09-10"},{"date":"2026-09-10","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"今晚我想來點棒的 Good Vibes Only Colour","movie_id":"kfa-087A78E044aA","runtime_minutes":90,"version":"一般","time":"16:30","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/087A78E044aA","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-10T16:30:00+08:00","end_estimated":"2026-09-10T18:12:00+08:00","crosses_midnight":false,"actual_date":"2026-09-10"},{"date":"2026-09-10","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"希望：末日血戰 Hope","movie_id":"kfa-D2e3EE6B642C","runtime_minutes":156,"version":"一般","time":"19:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/D2e3EE6B642C","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-10T19:00:00+08:00","end_estimated":"2026-09-10T21:48:00+08:00","crosses_midnight":false,"actual_date":"2026-09-10"},{"date":"2026-09-11","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"炎上 BURN","movie_id":"kfa-c98171760DBc","runtime_minutes":103,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/c98171760DBc","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-11T14:00:00+08:00","end_estimated":"2026-09-11T15:55:00+08:00","crosses_midnight":false,"actual_date":"2026-09-11"},{"date":"2026-09-11","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"我的爸爸是死刑犯 Me and My Condemned Father","movie_id":"kfa-B2b6a3f6346b","runtime_minutes":111,"version":"一般","time":"16:30","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/B2b6a3f6346b","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-11T16:30:00+08:00","end_estimated":"2026-09-11T18:33:00+08:00","crosses_midnight":false,"actual_date":"2026-09-11"},{"date":"2026-09-11","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"超拖樂團之我要幹大事啦！ Nirvanna the Band the Show the Movie","movie_id":"kfa-37191c13d2A6","runtime_minutes":100,"version":"一般","time":"19:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/37191c13d2A6","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-11T19:00:00+08:00","end_estimated":"2026-09-11T20:52:00+08:00","crosses_midnight":false,"actual_date":"2026-09-11"},{"date":"2026-09-12","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"撒旦的探戈 4K修復（上） Sátántangó 4K Restoration Part I","movie_id":"kfa-33a0F51C5b51","runtime_minutes":137,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/33a0F51C5b51","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":["經典重映"],"version_unmapped":false,"start":"2026-09-12T14:00:00+08:00","end_estimated":"2026-09-12T16:29:00+08:00","crosses_midnight":false,"actual_date":"2026-09-12"},{"date":"2026-09-12","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"撒旦的探戈 4K修復（中）Sátántangó 4K Restoration Part II","movie_id":"kfa-1bd6bFfC4FA9","runtime_minutes":124,"version":"一般","time":"16:50","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/1bd6bFfC4FA9","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":["經典重映"],"version_unmapped":false,"start":"2026-09-12T16:50:00+08:00","end_estimated":"2026-09-12T19:06:00+08:00","crosses_midnight":false,"actual_date":"2026-09-12"},{"date":"2026-09-12","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"撒旦的探戈 4K修復（下）Sátántangó 4K Restoration Part III","movie_id":"kfa-4c9a5B4a49f3","runtime_minutes":177,"version":"一般","time":"19:20","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/4c9a5B4a49f3","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":["經典重映"],"version_unmapped":false,"start":"2026-09-12T19:20:00+08:00","end_estimated":"2026-09-12T22:29:00+08:00","crosses_midnight":false,"actual_date":"2026-09-12"},{"date":"2026-09-13","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"希望：末日血戰 Hope","movie_id":"kfa-D2e3EE6B642C","runtime_minutes":156,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/D2e3EE6B642C","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-13T14:00:00+08:00","end_estimated":"2026-09-13T16:48:00+08:00","crosses_midnight":false,"actual_date":"2026-09-13"},{"date":"2026-09-13","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"超拖樂團之我要幹大事啦！ Nirvanna the Band the Show the Movie","movie_id":"kfa-37191c13d2A6","runtime_minutes":100,"version":"一般","time":"17:10","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/37191c13d2A6","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-13T17:10:00+08:00","end_estimated":"2026-09-13T19:02:00+08:00","crosses_midnight":false,"actual_date":"2026-09-13"},{"date":"2026-09-13","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"驀然回首 Look Back","movie_id":"kfa-B7544D929672","runtime_minutes":57,"version":"一般","time":"19:30","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/B7544D929672","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-13T19:30:00+08:00","end_estimated":"2026-09-13T20:39:00+08:00","crosses_midnight":false,"actual_date":"2026-09-13"},{"date":"2026-09-16","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"最後的作業 Your Last Homework","movie_id":"kfa-279556068ECb","runtime_minutes":109,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/279556068ECb","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-16T14:00:00+08:00","end_estimated":"2026-09-16T16:01:00+08:00","crosses_midnight":false,"actual_date":"2026-09-16"},{"date":"2026-09-16","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"魯冰花（數位修復版）The Dull-Ice Flower","movie_id":"kfa-4Ca6C4038F70","runtime_minutes":99,"version":"一般","time":"16:30","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/4Ca6C4038F70","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":["經典重映"],"version_unmapped":false,"start":"2026-09-16T16:30:00+08:00","end_estimated":"2026-09-16T18:21:00+08:00","crosses_midnight":false,"actual_date":"2026-09-16"},{"date":"2026-09-16","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"希望：末日血戰 Hope","movie_id":"kfa-D2e3EE6B642C","runtime_minutes":156,"version":"一般","time":"19:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/D2e3EE6B642C","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-16T19:00:00+08:00","end_estimated":"2026-09-16T21:48:00+08:00","crosses_midnight":false,"actual_date":"2026-09-16"},{"date":"2026-09-17","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"魯冰花（數位修復版）The Dull-Ice Flower","movie_id":"kfa-4Ca6C4038F70","runtime_minutes":99,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/4Ca6C4038F70","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":["經典重映"],"version_unmapped":false,"start":"2026-09-17T14:00:00+08:00","end_estimated":"2026-09-17T15:51:00+08:00","crosses_midnight":false,"actual_date":"2026-09-17"},{"date":"2026-09-17","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"18顆鑽石 Diamonds","movie_id":"kfa-88181DBb43aE","runtime_minutes":135,"version":"一般","time":"16:30","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/88181DBb43aE","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-17T16:30:00+08:00","end_estimated":"2026-09-17T18:57:00+08:00","crosses_midnight":false,"actual_date":"2026-09-17"},{"date":"2026-09-17","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"在世界的盡頭相遇 Meets the World","movie_id":"kfa-8A1793BA2e46","runtime_minutes":127,"version":"一般","time":"19:20","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/8A1793BA2e46","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-17T19:20:00+08:00","end_estimated":"2026-09-17T21:39:00+08:00","crosses_midnight":false,"actual_date":"2026-09-17"},{"date":"2026-09-18","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"我的爸爸是死刑犯 Me and My Condemned Father","movie_id":"kfa-B2b6a3f6346b","runtime_minutes":111,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/B2b6a3f6346b","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-18T14:00:00+08:00","end_estimated":"2026-09-18T16:03:00+08:00","crosses_midnight":false,"actual_date":"2026-09-18"},{"date":"2026-09-18","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"希望：末日血戰 Hope","movie_id":"kfa-D2e3EE6B642C","runtime_minutes":156,"version":"一般","time":"16:30","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/D2e3EE6B642C","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-18T16:30:00+08:00","end_estimated":"2026-09-18T19:18:00+08:00","crosses_midnight":false,"actual_date":"2026-09-18"},{"date":"2026-09-18","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"盜墓奇美拉 La Chimera","movie_id":"kfa-53c8fE54314d","runtime_minutes":131,"version":"一般","time":"19:40","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/53c8fE54314d","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-18T19:40:00+08:00","end_estimated":"2026-09-18T22:03:00+08:00","crosses_midnight":false,"actual_date":"2026-09-18"},{"date":"2026-09-20","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"鯨魚馬戲團 4K修復 Werckmeister Harmonies 4K Restoration","movie_id":"kfa-39dE203134D9","runtime_minutes":145,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/39dE203134D9","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":["經典重映"],"version_unmapped":false,"start":"2026-09-20T14:00:00+08:00","end_estimated":"2026-09-20T16:37:00+08:00","crosses_midnight":false,"actual_date":"2026-09-20"},{"date":"2026-09-20","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"魯冰花（數位修復版）The Dull-Ice Flower","movie_id":"kfa-4Ca6C4038F70","runtime_minutes":99,"version":"一般","time":"17:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/4Ca6C4038F70","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":["經典重映"],"version_unmapped":false,"start":"2026-09-20T17:00:00+08:00","end_estimated":"2026-09-20T18:51:00+08:00","crosses_midnight":false,"actual_date":"2026-09-20"},{"date":"2026-09-20","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"禍禍女 Mag Mag","movie_id":"kfa-5Dd67d1E88cd","runtime_minutes":113,"version":"一般","time":"19:10","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/5Dd67d1E88cd","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-20T19:10:00+08:00","end_estimated":"2026-09-20T21:15:00+08:00","crosses_midnight":false,"actual_date":"2026-09-20"},{"date":"2026-09-22","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"最後的作業 Your Last Homework","movie_id":"kfa-279556068ECb","runtime_minutes":109,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/279556068ECb","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-22T14:00:00+08:00","end_estimated":"2026-09-22T16:01:00+08:00","crosses_midnight":false,"actual_date":"2026-09-22"},{"date":"2026-09-22","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"盜墓奇美拉 La Chimera","movie_id":"kfa-53c8fE54314d","runtime_minutes":131,"version":"一般","time":"16:30","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/53c8fE54314d","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-22T16:30:00+08:00","end_estimated":"2026-09-22T18:53:00+08:00","crosses_midnight":false,"actual_date":"2026-09-22"},{"date":"2026-09-22","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"再見機器人 Robot Dreams","movie_id":"kfa-6a27B69Cb280","runtime_minutes":102,"version":"一般","time":"19:10","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/6a27B69Cb280","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-22T19:10:00+08:00","end_estimated":"2026-09-22T21:04:00+08:00","crosses_midnight":false,"actual_date":"2026-09-22"},{"date":"2026-09-23","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"世界末日愛上你 Peak Everything","movie_id":"kfa-a63D3F4E22cc","runtime_minutes":100,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/a63D3F4E22cc","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-23T14:00:00+08:00","end_estimated":"2026-09-23T15:52:00+08:00","crosses_midnight":false,"actual_date":"2026-09-23"},{"date":"2026-09-23","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"變形卡夫卡 Franz","movie_id":"kfa-F3b9f77d3D2a","runtime_minutes":127,"version":"一般","time":"16:30","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/F3b9f77d3D2a","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-23T16:30:00+08:00","end_estimated":"2026-09-23T18:49:00+08:00","crosses_midnight":false,"actual_date":"2026-09-23"},{"date":"2026-09-23","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"臥底情劫 Plainclothes","movie_id":"kfa-167AB5eADF4E","runtime_minutes":96,"version":"一般","time":"19:10","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/167AB5eADF4E","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-23T19:10:00+08:00","end_estimated":"2026-09-23T20:58:00+08:00","crosses_midnight":false,"actual_date":"2026-09-23"},{"date":"2026-09-24","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"希望：末日血戰 Hope","movie_id":"kfa-D2e3EE6B642C","runtime_minutes":156,"version":"一般","time":"14:00","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/D2e3EE6B642C","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-24T14:00:00+08:00","end_estimated":"2026-09-24T16:48:00+08:00","crosses_midnight":false,"actual_date":"2026-09-24"},{"date":"2026-09-24","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"被偷走的情歌 Power Ballad","movie_id":"kfa-929e692C1d5f","runtime_minutes":99,"version":"一般","time":"17:10","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/929e692C1d5f","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-24T17:10:00+08:00","end_estimated":"2026-09-24T19:01:00+08:00","crosses_midnight":false,"actual_date":"2026-09-24"},{"date":"2026-09-24","region":"高雄","region_id":"a07","cinema":"高雄市電影館","theater_id":"t07726","movie":"怎麼不去死？ Why Wait, Just Die","movie_id":"kfa-182AAeaB62BB","runtime_minutes":96,"version":"一般","time":"19:20","movie_url":"https://kfa.kcg.gov.tw/tw/movies-content/182AAeaB62BB","version_raw":"一般","languages":[],"formats":[],"halls":["三樓"],"events":[],"version_unmapped":false,"start":"2026-09-24T19:20:00+08:00","end_estimated":"2026-09-24T21:08:00+08:00","crosses_midnight":false,"actual_date":"2026-09-24"},{"date":"2026-09-01","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"劇場版 吉伊卡哇 人魚島的秘密 CHIIKAWA THE MOVIE: THE SECRET OF THE MERMAID ISLAND","movie_id":"nwac-7BA0053eCFf2","runtime_minutes":100,"version":"一般","time":"11:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/7BA0053eCFf2","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-01T11:30:00+08:00","end_estimated":"2026-09-01T13:22:00+08:00","crosses_midnight":false,"actual_date":"2026-09-01"},{"date":"2026-09-01","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"超拖樂團之我要幹大事啦！ Nirvanna the Band the Show the Movie","movie_id":"nwac-7aD6D092b173","runtime_minutes":100,"version":"一般","time":"14:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/7aD6D092b173","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-01T14:30:00+08:00","end_estimated":"2026-09-01T16:22:00+08:00","crosses_midnight":false,"actual_date":"2026-09-01"},{"date":"2026-09-01","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"開放性邀請 The Invite","movie_id":"nwac-9A264e75431b","runtime_minutes":107,"version":"一般","time":"14:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/9A264e75431b","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-01T14:50:00+08:00","end_estimated":"2026-09-01T16:49:00+08:00","crosses_midnight":false,"actual_date":"2026-09-01"},{"date":"2026-09-01","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"炎上 BURN","movie_id":"nwac-ef118b087229","runtime_minutes":103,"version":"一般","time":"16:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/ef118b087229","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-01T16:30:00+08:00","end_estimated":"2026-09-01T18:25:00+08:00","crosses_midnight":false,"actual_date":"2026-09-01"},{"date":"2026-09-01","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"驀然回首 Look Back","movie_id":"nwac-a42B7F4A7cB5","runtime_minutes":57,"version":"一般","time":"19:40","movie_url":"https://www.nwac.org.tw/tw/movies-content/a42B7F4A7cB5","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-01T19:40:00+08:00","end_estimated":"2026-09-01T20:49:00+08:00","crosses_midnight":false,"actual_date":"2026-09-01"},{"date":"2026-09-02","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"驀然回首 Look Back","movie_id":"nwac-a42B7F4A7cB5","runtime_minutes":57,"version":"一般","time":"14:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/a42B7F4A7cB5","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-02T14:50:00+08:00","end_estimated":"2026-09-02T15:59:00+08:00","crosses_midnight":false,"actual_date":"2026-09-02"},{"date":"2026-09-02","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"開放性邀請 The Invite","movie_id":"nwac-9A264e75431b","runtime_minutes":107,"version":"一般","time":"19:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/9A264e75431b","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-02T19:10:00+08:00","end_estimated":"2026-09-02T21:09:00+08:00","crosses_midnight":false,"actual_date":"2026-09-02"},{"date":"2026-09-02","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"超拖樂團之我要幹大事啦！ Nirvanna the Band the Show the Movie","movie_id":"nwac-7aD6D092b173","runtime_minutes":100,"version":"一般","time":"19:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/7aD6D092b173","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-02T19:30:00+08:00","end_estimated":"2026-09-02T21:22:00+08:00","crosses_midnight":false,"actual_date":"2026-09-02"},{"date":"2026-09-03","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"她復出的那天 The Day She Returns","movie_id":"nwac-59eaf0F2d15B","runtime_minutes":84,"version":"一般","time":"14:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/59eaf0F2d15B","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-03T14:50:00+08:00","end_estimated":"2026-09-03T16:26:00+08:00","crosses_midnight":false,"actual_date":"2026-09-03"},{"date":"2026-09-03","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"驀然回首 Look Back","movie_id":"nwac-a42B7F4A7cB5","runtime_minutes":57,"version":"一般","time":"16:40","movie_url":"https://www.nwac.org.tw/tw/movies-content/a42B7F4A7cB5","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-03T16:40:00+08:00","end_estimated":"2026-09-03T17:49:00+08:00","crosses_midnight":false,"actual_date":"2026-09-03"},{"date":"2026-09-03","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"奧德賽 The Odyssey","movie_id":"nwac-FE5270c2E456","runtime_minutes":172,"version":"一般","time":"18:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/FE5270c2E456","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-03T18:10:00+08:00","end_estimated":"2026-09-03T21:14:00+08:00","crosses_midnight":false,"actual_date":"2026-09-03"},{"date":"2026-09-03","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"在世界的盡頭相遇 Meets the World","movie_id":"nwac-4Bb432393E6c","runtime_minutes":127,"version":"一般","time":"19:00","movie_url":"https://www.nwac.org.tw/tw/movies-content/4Bb432393E6c","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-03T19:00:00+08:00","end_estimated":"2026-09-03T21:19:00+08:00","crosses_midnight":false,"actual_date":"2026-09-03"},{"date":"2026-09-04","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"今晚我想來點棒的 Good Vibes Only","movie_id":"nwac-3E55bA1Aa8ea","runtime_minutes":90,"version":"一般","time":"14:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/3E55bA1Aa8ea","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-04T14:50:00+08:00","end_estimated":"2026-09-04T16:32:00+08:00","crosses_midnight":false,"actual_date":"2026-09-04"},{"date":"2026-09-04","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"最後的作業 Your Last Homework","movie_id":"nwac-03756F3dD9bD","runtime_minutes":109,"version":"一般","time":"16:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/03756F3dD9bD","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-04T16:50:00+08:00","end_estimated":"2026-09-04T18:51:00+08:00","crosses_midnight":false,"actual_date":"2026-09-04"},{"date":"2026-09-04","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"希望：末日血戰 Hope","movie_id":"nwac-01226bC2A4e3","runtime_minutes":156,"version":"一般","time":"19:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/01226bC2A4e3","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-04T19:20:00+08:00","end_estimated":"2026-09-04T22:08:00+08:00","crosses_midnight":false,"actual_date":"2026-09-04"},{"date":"2026-09-05","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"驀然回首 Look Back","movie_id":"nwac-a42B7F4A7cB5","runtime_minutes":57,"version":"一般","time":"11:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/a42B7F4A7cB5","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-05T11:30:00+08:00","end_estimated":"2026-09-05T12:39:00+08:00","crosses_midnight":false,"actual_date":"2026-09-05"},{"date":"2026-09-05","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"劇場版 吉伊卡哇 人魚島的秘密 CHIIKAWA THE MOVIE: THE SECRET OF THE MERMAID ISLAND","movie_id":"nwac-7BA0053eCFf2","runtime_minutes":100,"version":"一般","time":"11:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/7BA0053eCFf2","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-05T11:50:00+08:00","end_estimated":"2026-09-05T13:42:00+08:00","crosses_midnight":false,"actual_date":"2026-09-05"},{"date":"2026-09-05","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"希望：末日血戰 Hope","movie_id":"nwac-01226bC2A4e3","runtime_minutes":156,"version":"一般","time":"14:00","movie_url":"https://www.nwac.org.tw/tw/movies-content/01226bC2A4e3","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-05T14:00:00+08:00","end_estimated":"2026-09-05T16:48:00+08:00","crosses_midnight":false,"actual_date":"2026-09-05"},{"date":"2026-09-05","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"超拖樂團之我要幹大事啦！ Nirvanna the Band the Show the Movie","movie_id":"nwac-7aD6D092b173","runtime_minutes":100,"version":"一般","time":"15:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/7aD6D092b173","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-05T15:20:00+08:00","end_estimated":"2026-09-05T17:12:00+08:00","crosses_midnight":false,"actual_date":"2026-09-05"},{"date":"2026-09-05","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"開放性邀請 The Invite","movie_id":"nwac-9A264e75431b","runtime_minutes":107,"version":"一般","time":"17:00","movie_url":"https://www.nwac.org.tw/tw/movies-content/9A264e75431b","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-05T17:00:00+08:00","end_estimated":"2026-09-05T18:59:00+08:00","crosses_midnight":false,"actual_date":"2026-09-05"},{"date":"2026-09-05","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"今晚我想來點棒的 Good Vibes Only","movie_id":"nwac-3E55bA1Aa8ea","runtime_minutes":90,"version":"一般","time":"17:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/3E55bA1Aa8ea","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-05T17:30:00+08:00","end_estimated":"2026-09-05T19:12:00+08:00","crosses_midnight":false,"actual_date":"2026-09-05"},{"date":"2026-09-05","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"奧德賽 The Odyssey","movie_id":"nwac-FE5270c2E456","runtime_minutes":172,"version":"一般","time":"19:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/FE5270c2E456","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-05T19:20:00+08:00","end_estimated":"2026-09-05T22:24:00+08:00","crosses_midnight":false,"actual_date":"2026-09-05"},{"date":"2026-09-06","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"劇場版 吉伊卡哇 人魚島的秘密 CHIIKAWA THE MOVIE: THE SECRET OF THE MERMAID ISLAND","movie_id":"nwac-7BA0053eCFf2","runtime_minutes":100,"version":"一般","time":"14:40","movie_url":"https://www.nwac.org.tw/tw/movies-content/7BA0053eCFf2","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-06T14:40:00+08:00","end_estimated":"2026-09-06T16:32:00+08:00","crosses_midnight":false,"actual_date":"2026-09-06"},{"date":"2026-09-06","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"在世界的盡頭相遇 Meets the World","movie_id":"nwac-4Bb432393E6c","runtime_minutes":127,"version":"一般","time":"17:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/4Bb432393E6c","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-06T17:20:00+08:00","end_estimated":"2026-09-06T19:39:00+08:00","crosses_midnight":false,"actual_date":"2026-09-06"},{"date":"2026-09-06","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"希望：末日血戰 Hope","movie_id":"nwac-01226bC2A4e3","runtime_minutes":156,"version":"一般","time":"19:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/01226bC2A4e3","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-06T19:30:00+08:00","end_estimated":"2026-09-06T22:18:00+08:00","crosses_midnight":false,"actual_date":"2026-09-06"},{"date":"2026-09-08","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"在世界的盡頭相遇 Meets the World","movie_id":"nwac-4Bb432393E6c","runtime_minutes":127,"version":"一般","time":"17:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/4Bb432393E6c","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-08T17:10:00+08:00","end_estimated":"2026-09-08T19:29:00+08:00","crosses_midnight":false,"actual_date":"2026-09-08"},{"date":"2026-09-08","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"驀然回首 Look Back","movie_id":"nwac-a42B7F4A7cB5","runtime_minutes":57,"version":"一般","time":"17:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/a42B7F4A7cB5","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-08T17:30:00+08:00","end_estimated":"2026-09-08T18:39:00+08:00","crosses_midnight":false,"actual_date":"2026-09-08"},{"date":"2026-09-08","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"希望：末日血戰 Hope","movie_id":"nwac-01226bC2A4e3","runtime_minutes":156,"version":"一般","time":"18:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/01226bC2A4e3","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-08T18:50:00+08:00","end_estimated":"2026-09-08T21:38:00+08:00","crosses_midnight":false,"actual_date":"2026-09-08"},{"date":"2026-09-08","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"開放性邀請 The Invite","movie_id":"nwac-9A264e75431b","runtime_minutes":107,"version":"一般","time":"19:40","movie_url":"https://www.nwac.org.tw/tw/movies-content/9A264e75431b","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-08T19:40:00+08:00","end_estimated":"2026-09-08T21:39:00+08:00","crosses_midnight":false,"actual_date":"2026-09-08"},{"date":"2026-09-09","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"她復出的那天 The Day She Returns","movie_id":"nwac-59eaf0F2d15B","runtime_minutes":84,"version":"一般","time":"16:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/59eaf0F2d15B","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-09T16:30:00+08:00","end_estimated":"2026-09-09T18:06:00+08:00","crosses_midnight":false,"actual_date":"2026-09-09"},{"date":"2026-09-09","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"奧德賽 The Odyssey","movie_id":"nwac-FE5270c2E456","runtime_minutes":172,"version":"一般","time":"18:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/FE5270c2E456","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-09T18:20:00+08:00","end_estimated":"2026-09-09T21:24:00+08:00","crosses_midnight":false,"actual_date":"2026-09-09"},{"date":"2026-09-09","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"超拖樂團之我要幹大事啦！ Nirvanna the Band the Show the Movie","movie_id":"nwac-7aD6D092b173","runtime_minutes":100,"version":"一般","time":"19:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/7aD6D092b173","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-09T19:20:00+08:00","end_estimated":"2026-09-09T21:12:00+08:00","crosses_midnight":false,"actual_date":"2026-09-09"},{"date":"2026-09-10","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"禍禍女 Mag Mag","movie_id":"nwac-10107B890BE6","runtime_minutes":113,"version":"一般","time":"14:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/10107B890BE6","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-10T14:30:00+08:00","end_estimated":"2026-09-10T16:35:00+08:00","crosses_midnight":false,"actual_date":"2026-09-10"},{"date":"2026-09-10","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"在世界的盡頭相遇 Meets the World","movie_id":"nwac-4Bb432393E6c","runtime_minutes":127,"version":"一般","time":"17:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/4Bb432393E6c","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-10T17:20:00+08:00","end_estimated":"2026-09-10T19:39:00+08:00","crosses_midnight":false,"actual_date":"2026-09-10"},{"date":"2026-09-10","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"開放性邀請 The Invite","movie_id":"nwac-9A264e75431b","runtime_minutes":107,"version":"一般","time":"19:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/9A264e75431b","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-10T19:50:00+08:00","end_estimated":"2026-09-10T21:49:00+08:00","crosses_midnight":false,"actual_date":"2026-09-10"},{"date":"2026-09-11","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"她復出的那天 The Day She Returns","movie_id":"nwac-59eaf0F2d15B","runtime_minutes":84,"version":"一般","time":"14:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/59eaf0F2d15B","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-11T14:30:00+08:00","end_estimated":"2026-09-11T16:06:00+08:00","crosses_midnight":false,"actual_date":"2026-09-11"},{"date":"2026-09-11","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"驀然回首 Look Back","movie_id":"nwac-a42B7F4A7cB5","runtime_minutes":57,"version":"一般","time":"14:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/a42B7F4A7cB5","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-11T14:50:00+08:00","end_estimated":"2026-09-11T15:59:00+08:00","crosses_midnight":false,"actual_date":"2026-09-11"},{"date":"2026-09-11","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"希望：末日血戰 Hope","movie_id":"nwac-01226bC2A4e3","runtime_minutes":156,"version":"一般","time":"16:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/01226bC2A4e3","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-11T16:20:00+08:00","end_estimated":"2026-09-11T19:08:00+08:00","crosses_midnight":false,"actual_date":"2026-09-11"},{"date":"2026-09-11","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"禍禍女 Mag Mag","movie_id":"nwac-10107B890BE6","runtime_minutes":113,"version":"一般","time":"19:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/10107B890BE6","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-11T19:20:00+08:00","end_estimated":"2026-09-11T21:25:00+08:00","crosses_midnight":false,"actual_date":"2026-09-11"},{"date":"2026-09-11","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"被偷走的情歌 Power Ballad","movie_id":"nwac-8c75B5832a84","runtime_minutes":99,"version":"一般","time":"19:40","movie_url":"https://www.nwac.org.tw/tw/movies-content/8c75B5832a84","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-11T19:40:00+08:00","end_estimated":"2026-09-11T21:31:00+08:00","crosses_midnight":false,"actual_date":"2026-09-11"},{"date":"2026-09-12","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"劇場版 吉伊卡哇 人魚島的秘密 CHIIKAWA THE MOVIE: THE SECRET OF THE MERMAID ISLAND","movie_id":"nwac-7BA0053eCFf2","runtime_minutes":100,"version":"一般","time":"11:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/7BA0053eCFf2","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-12T11:50:00+08:00","end_estimated":"2026-09-12T13:42:00+08:00","crosses_midnight":false,"actual_date":"2026-09-12"},{"date":"2026-09-12","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"希望：末日血戰 Hope","movie_id":"nwac-01226bC2A4e3","runtime_minutes":156,"version":"一般","time":"13:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/01226bC2A4e3","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-12T13:30:00+08:00","end_estimated":"2026-09-12T16:18:00+08:00","crosses_midnight":false,"actual_date":"2026-09-12"},{"date":"2026-09-12","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"驀然回首 Look Back","movie_id":"nwac-a42B7F4A7cB5","runtime_minutes":57,"version":"一般","time":"15:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/a42B7F4A7cB5","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-12T15:10:00+08:00","end_estimated":"2026-09-12T16:19:00+08:00","crosses_midnight":false,"actual_date":"2026-09-12"},{"date":"2026-09-12","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"今晚我想來點棒的 Good Vibes Only","movie_id":"nwac-3E55bA1Aa8ea","runtime_minutes":90,"version":"一般","time":"16:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/3E55bA1Aa8ea","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-12T16:30:00+08:00","end_estimated":"2026-09-12T18:12:00+08:00","crosses_midnight":false,"actual_date":"2026-09-12"},{"date":"2026-09-12","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"我的爸爸是死刑犯 Me and My Condemned Father","movie_id":"nwac-4cFe49339c48","runtime_minutes":111,"version":"一般","time":"16:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/4cFe49339c48","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-12T16:50:00+08:00","end_estimated":"2026-09-12T18:53:00+08:00","crosses_midnight":false,"actual_date":"2026-09-12"},{"date":"2026-09-12","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"怎麼不去死？ Why Wait, Just Die","movie_id":"nwac-db0b0744F445","runtime_minutes":96,"version":"一般","time":"18:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/db0b0744F445","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-12T18:20:00+08:00","end_estimated":"2026-09-12T20:08:00+08:00","crosses_midnight":false,"actual_date":"2026-09-12"},{"date":"2026-09-12","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"被偷走的情歌 Power Ballad","movie_id":"nwac-8c75B5832a84","runtime_minutes":99,"version":"一般","time":"20:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/8c75B5832a84","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-12T20:20:00+08:00","end_estimated":"2026-09-12T22:11:00+08:00","crosses_midnight":false,"actual_date":"2026-09-12"},{"date":"2026-09-13","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"今晚我想來點棒的 Good Vibes Only","movie_id":"nwac-3E55bA1Aa8ea","runtime_minutes":90,"version":"一般","time":"11:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/3E55bA1Aa8ea","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-13T11:30:00+08:00","end_estimated":"2026-09-13T13:12:00+08:00","crosses_midnight":false,"actual_date":"2026-09-13"},{"date":"2026-09-13","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"被偷走的情歌 Power Ballad","movie_id":"nwac-8c75B5832a84","runtime_minutes":99,"version":"一般","time":"13:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/8c75B5832a84","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-13T13:30:00+08:00","end_estimated":"2026-09-13T15:21:00+08:00","crosses_midnight":false,"actual_date":"2026-09-13"},{"date":"2026-09-13","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"在世界的盡頭相遇 Meets the World","movie_id":"nwac-4Bb432393E6c","runtime_minutes":127,"version":"一般","time":"15:40","movie_url":"https://www.nwac.org.tw/tw/movies-content/4Bb432393E6c","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-13T15:40:00+08:00","end_estimated":"2026-09-13T17:59:00+08:00","crosses_midnight":false,"actual_date":"2026-09-13"},{"date":"2026-09-13","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"最後的作業 Your Last Homework","movie_id":"nwac-03756F3dD9bD","runtime_minutes":109,"version":"一般","time":"18:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/03756F3dD9bD","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-13T18:30:00+08:00","end_estimated":"2026-09-13T20:31:00+08:00","crosses_midnight":false,"actual_date":"2026-09-13"},{"date":"2026-09-15","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"被偷走的情歌 Power Ballad","movie_id":"nwac-8c75B5832a84","runtime_minutes":99,"version":"一般","time":"14:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/8c75B5832a84","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-15T14:30:00+08:00","end_estimated":"2026-09-15T16:21:00+08:00","crosses_midnight":false,"actual_date":"2026-09-15"},{"date":"2026-09-15","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"今晚我想來點棒的 Good Vibes Only","movie_id":"nwac-3E55bA1Aa8ea","runtime_minutes":90,"version":"一般","time":"15:00","movie_url":"https://www.nwac.org.tw/tw/movies-content/3E55bA1Aa8ea","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-15T15:00:00+08:00","end_estimated":"2026-09-15T16:42:00+08:00","crosses_midnight":false,"actual_date":"2026-09-15"},{"date":"2026-09-15","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"希望：末日血戰 Hope","movie_id":"nwac-01226bC2A4e3","runtime_minutes":156,"version":"一般","time":"16:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/01226bC2A4e3","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-15T16:30:00+08:00","end_estimated":"2026-09-15T19:18:00+08:00","crosses_midnight":false,"actual_date":"2026-09-15"},{"date":"2026-09-15","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"劇場版 吉伊卡哇 人魚島的秘密 CHIIKAWA THE MOVIE: THE SECRET OF THE MERMAID ISLAND","movie_id":"nwac-7BA0053eCFf2","runtime_minutes":100,"version":"一般","time":"17:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/7BA0053eCFf2","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-15T17:10:00+08:00","end_estimated":"2026-09-15T19:02:00+08:00","crosses_midnight":false,"actual_date":"2026-09-15"},{"date":"2026-09-15","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"在世界的盡頭相遇 Meets the World","movie_id":"nwac-4Bb432393E6c","runtime_minutes":127,"version":"一般","time":"19:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/4Bb432393E6c","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-15T19:30:00+08:00","end_estimated":"2026-09-15T21:49:00+08:00","crosses_midnight":false,"actual_date":"2026-09-15"},{"date":"2026-09-15","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"超拖樂團之我要幹大事啦！ Nirvanna the Band the Show the Movie","movie_id":"nwac-7aD6D092b173","runtime_minutes":100,"version":"一般","time":"19:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/7aD6D092b173","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-15T19:50:00+08:00","end_estimated":"2026-09-15T21:42:00+08:00","crosses_midnight":false,"actual_date":"2026-09-15"},{"date":"2026-09-16","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"被偷走的情歌 Power Ballad","movie_id":"nwac-8c75B5832a84","runtime_minutes":99,"version":"一般","time":"14:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/8c75B5832a84","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-16T14:30:00+08:00","end_estimated":"2026-09-16T16:21:00+08:00","crosses_midnight":false,"actual_date":"2026-09-16"},{"date":"2026-09-16","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"驀然回首 Look Back","movie_id":"nwac-a42B7F4A7cB5","runtime_minutes":57,"version":"一般","time":"14:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/a42B7F4A7cB5","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-16T14:50:00+08:00","end_estimated":"2026-09-16T15:59:00+08:00","crosses_midnight":false,"actual_date":"2026-09-16"},{"date":"2026-09-16","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"今晚我想來點棒的 Good Vibes Only","movie_id":"nwac-3E55bA1Aa8ea","runtime_minutes":90,"version":"一般","time":"16:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/3E55bA1Aa8ea","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-16T16:30:00+08:00","end_estimated":"2026-09-16T18:12:00+08:00","crosses_midnight":false,"actual_date":"2026-09-16"},{"date":"2026-09-16","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"我的爸爸是死刑犯 Me and My Condemned Father","movie_id":"nwac-4cFe49339c48","runtime_minutes":111,"version":"一般","time":"16:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/4cFe49339c48","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-16T16:50:00+08:00","end_estimated":"2026-09-16T18:53:00+08:00","crosses_midnight":false,"actual_date":"2026-09-16"},{"date":"2026-09-16","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"奧德賽 The Odyssey","movie_id":"nwac-FE5270c2E456","runtime_minutes":172,"version":"一般","time":"18:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/FE5270c2E456","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-16T18:20:00+08:00","end_estimated":"2026-09-16T21:24:00+08:00","crosses_midnight":false,"actual_date":"2026-09-16"},{"date":"2026-09-16","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"在世界的盡頭相遇 Meets the World","movie_id":"nwac-4Bb432393E6c","runtime_minutes":127,"version":"一般","time":"19:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/4Bb432393E6c","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-16T19:10:00+08:00","end_estimated":"2026-09-16T21:29:00+08:00","crosses_midnight":false,"actual_date":"2026-09-16"},{"date":"2026-09-17","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"驀然回首 Look Back","movie_id":"nwac-a42B7F4A7cB5","runtime_minutes":57,"version":"一般","time":"15:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/a42B7F4A7cB5","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-17T15:30:00+08:00","end_estimated":"2026-09-17T16:39:00+08:00","crosses_midnight":false,"actual_date":"2026-09-17"},{"date":"2026-09-17","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"我的爸爸是死刑犯 Me and My Condemned Father","movie_id":"nwac-4cFe49339c48","runtime_minutes":111,"version":"一般","time":"16:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/4cFe49339c48","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-17T16:50:00+08:00","end_estimated":"2026-09-17T18:53:00+08:00","crosses_midnight":false,"actual_date":"2026-09-17"},{"date":"2026-09-17","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"超拖樂團之我要幹大事啦！ Nirvanna the Band the Show the Movie","movie_id":"nwac-7aD6D092b173","runtime_minutes":100,"version":"一般","time":"17:00","movie_url":"https://www.nwac.org.tw/tw/movies-content/7aD6D092b173","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-17T17:00:00+08:00","end_estimated":"2026-09-17T18:52:00+08:00","crosses_midnight":false,"actual_date":"2026-09-17"},{"date":"2026-09-17","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"今晚我想來點棒的 Good Vibes Only","movie_id":"nwac-3E55bA1Aa8ea","runtime_minutes":90,"version":"一般","time":"19:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/3E55bA1Aa8ea","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-17T19:10:00+08:00","end_estimated":"2026-09-17T20:52:00+08:00","crosses_midnight":false,"actual_date":"2026-09-17"},{"date":"2026-09-17","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"被偷走的情歌 Power Ballad","movie_id":"nwac-8c75B5832a84","runtime_minutes":99,"version":"一般","time":"19:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/8c75B5832a84","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-17T19:30:00+08:00","end_estimated":"2026-09-17T21:21:00+08:00","crosses_midnight":false,"actual_date":"2026-09-17"},{"date":"2026-09-18","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"奧德賽 The Odyssey","movie_id":"nwac-FE5270c2E456","runtime_minutes":172,"version":"一般","time":"14:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/FE5270c2E456","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-18T14:30:00+08:00","end_estimated":"2026-09-18T17:34:00+08:00","crosses_midnight":false,"actual_date":"2026-09-18"},{"date":"2026-09-18","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"最後的作業 Your Last Homework","movie_id":"nwac-03756F3dD9bD","runtime_minutes":109,"version":"一般","time":"14:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/03756F3dD9bD","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-18T14:50:00+08:00","end_estimated":"2026-09-18T16:51:00+08:00","crosses_midnight":false,"actual_date":"2026-09-18"},{"date":"2026-09-18","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"禍禍女 Mag Mag","movie_id":"nwac-10107B890BE6","runtime_minutes":113,"version":"一般","time":"17:00","movie_url":"https://www.nwac.org.tw/tw/movies-content/10107B890BE6","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-18T17:00:00+08:00","end_estimated":"2026-09-18T19:05:00+08:00","crosses_midnight":false,"actual_date":"2026-09-18"},{"date":"2026-09-18","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"怎麼不去死？ Why Wait, Just Die","movie_id":"nwac-db0b0744F445","runtime_minutes":96,"version":"一般","time":"17:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/db0b0744F445","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-18T17:50:00+08:00","end_estimated":"2026-09-18T19:38:00+08:00","crosses_midnight":false,"actual_date":"2026-09-18"},{"date":"2026-09-18","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"變形卡夫卡 Franz","movie_id":"nwac-c13c0C0E621C","runtime_minutes":127,"version":"一般","time":"19:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/c13c0C0E621C","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-18T19:20:00+08:00","end_estimated":"2026-09-18T21:39:00+08:00","crosses_midnight":false,"actual_date":"2026-09-18"},{"date":"2026-09-18","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"臥底情劫 Plainclothes","movie_id":"nwac-660D05bBEd83","runtime_minutes":96,"version":"一般","time":"19:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/660D05bBEd83","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-18T19:50:00+08:00","end_estimated":"2026-09-18T21:38:00+08:00","crosses_midnight":false,"actual_date":"2026-09-18"},{"date":"2026-09-19","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"盜墓奇美拉 La Chimera","movie_id":"nwac-a3fe1152D0Ea","runtime_minutes":131,"version":"一般","time":"11:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/a3fe1152D0Ea","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-19T11:30:00+08:00","end_estimated":"2026-09-19T13:53:00+08:00","crosses_midnight":false,"actual_date":"2026-09-19"},{"date":"2026-09-19","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"劇場版 吉伊卡哇 人魚島的秘密 CHIIKAWA THE MOVIE: THE SECRET OF THE MERMAID ISLAND","movie_id":"nwac-7BA0053eCFf2","runtime_minutes":100,"version":"一般","time":"11:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/7BA0053eCFf2","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-19T11:50:00+08:00","end_estimated":"2026-09-19T13:42:00+08:00","crosses_midnight":false,"actual_date":"2026-09-19"},{"date":"2026-09-19","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"臥底情劫 Plainclothes","movie_id":"nwac-660D05bBEd83","runtime_minutes":96,"version":"一般","time":"14:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/660D05bBEd83","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-19T14:10:00+08:00","end_estimated":"2026-09-19T15:58:00+08:00","crosses_midnight":false,"actual_date":"2026-09-19"},{"date":"2026-09-19","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"開放性邀請 The Invite","movie_id":"nwac-9A264e75431b","runtime_minutes":107,"version":"一般","time":"14:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/9A264e75431b","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-19T14:30:00+08:00","end_estimated":"2026-09-19T16:29:00+08:00","crosses_midnight":false,"actual_date":"2026-09-19"},{"date":"2026-09-19","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"變形卡夫卡 Franz","movie_id":"nwac-c13c0C0E621C","runtime_minutes":127,"version":"一般","time":"16:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/c13c0C0E621C","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-19T16:10:00+08:00","end_estimated":"2026-09-19T18:29:00+08:00","crosses_midnight":false,"actual_date":"2026-09-19"},{"date":"2026-09-19","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"最後的作業 Your Last Homework","movie_id":"nwac-03756F3dD9bD","runtime_minutes":109,"version":"一般","time":"16:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/03756F3dD9bD","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-19T16:50:00+08:00","end_estimated":"2026-09-19T18:51:00+08:00","crosses_midnight":false,"actual_date":"2026-09-19"},{"date":"2026-09-19","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"被偷走的情歌 Power Ballad","movie_id":"nwac-8c75B5832a84","runtime_minutes":99,"version":"一般","time":"19:00","movie_url":"https://www.nwac.org.tw/tw/movies-content/8c75B5832a84","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-19T19:00:00+08:00","end_estimated":"2026-09-19T20:51:00+08:00","crosses_midnight":false,"actual_date":"2026-09-19"},{"date":"2026-09-19","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"怎麼不去死？ Why Wait, Just Die","movie_id":"nwac-db0b0744F445","runtime_minutes":96,"version":"一般","time":"19:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/db0b0744F445","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-19T19:20:00+08:00","end_estimated":"2026-09-19T21:08:00+08:00","crosses_midnight":false,"actual_date":"2026-09-19"},{"date":"2026-09-20","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"盜墓奇美拉 La Chimera","movie_id":"nwac-a3fe1152D0Ea","runtime_minutes":131,"version":"一般","time":"11:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/a3fe1152D0Ea","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-20T11:30:00+08:00","end_estimated":"2026-09-20T13:53:00+08:00","crosses_midnight":false,"actual_date":"2026-09-20"},{"date":"2026-09-20","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"變形卡夫卡 Franz","movie_id":"nwac-c13c0C0E621C","runtime_minutes":127,"version":"一般","time":"11:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/c13c0C0E621C","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-20T11:50:00+08:00","end_estimated":"2026-09-20T14:09:00+08:00","crosses_midnight":false,"actual_date":"2026-09-20"},{"date":"2026-09-20","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"再見機器人 Robot Dreams","movie_id":"nwac-D78014f2bA5d","runtime_minutes":102,"version":"一般","time":"14:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/D78014f2bA5d","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-20T14:10:00+08:00","end_estimated":"2026-09-20T16:04:00+08:00","crosses_midnight":false,"actual_date":"2026-09-20"},{"date":"2026-09-20","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"我的爸爸是死刑犯 Me and My Condemned Father","movie_id":"nwac-4cFe49339c48","runtime_minutes":111,"version":"一般","time":"14:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/4cFe49339c48","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-20T14:30:00+08:00","end_estimated":"2026-09-20T16:33:00+08:00","crosses_midnight":false,"actual_date":"2026-09-20"},{"date":"2026-09-20","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"黑牢城 The Samurai and the Prisoner","movie_id":"nwac-B7228652ca8b","runtime_minutes":148,"version":"一般","time":"16:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/B7228652ca8b","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-20T16:20:00+08:00","end_estimated":"2026-09-20T19:00:00+08:00","crosses_midnight":false,"actual_date":"2026-09-20"},{"date":"2026-09-20","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"臥底情劫 Plainclothes","movie_id":"nwac-660D05bBEd83","runtime_minutes":96,"version":"一般","time":"16:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/660D05bBEd83","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-20T16:50:00+08:00","end_estimated":"2026-09-20T18:38:00+08:00","crosses_midnight":false,"actual_date":"2026-09-20"},{"date":"2026-09-20","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"奧德賽 The Odyssey","movie_id":"nwac-FE5270c2E456","runtime_minutes":172,"version":"一般","time":"19:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/FE5270c2E456","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-20T19:10:00+08:00","end_estimated":"2026-09-20T22:14:00+08:00","crosses_midnight":false,"actual_date":"2026-09-20"},{"date":"2026-09-20","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"被偷走的情歌 Power Ballad","movie_id":"nwac-8c75B5832a84","runtime_minutes":99,"version":"一般","time":"19:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/8c75B5832a84","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-20T19:30:00+08:00","end_estimated":"2026-09-20T21:21:00+08:00","crosses_midnight":false,"actual_date":"2026-09-20"},{"date":"2026-09-22","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"被偷走的情歌 Power Ballad","movie_id":"nwac-8c75B5832a84","runtime_minutes":99,"version":"一般","time":"14:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/8c75B5832a84","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-22T14:30:00+08:00","end_estimated":"2026-09-22T16:21:00+08:00","crosses_midnight":false,"actual_date":"2026-09-22"},{"date":"2026-09-22","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"劇場版 吉伊卡哇 人魚島的秘密 CHIIKAWA THE MOVIE: THE SECRET OF THE MERMAID ISLAND","movie_id":"nwac-7BA0053eCFf2","runtime_minutes":100,"version":"一般","time":"14:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/7BA0053eCFf2","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-22T14:50:00+08:00","end_estimated":"2026-09-22T16:42:00+08:00","crosses_midnight":false,"actual_date":"2026-09-22"},{"date":"2026-09-22","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"怎麼不去死？ Why Wait, Just Die","movie_id":"nwac-db0b0744F445","runtime_minutes":96,"version":"一般","time":"16:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/db0b0744F445","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-22T16:30:00+08:00","end_estimated":"2026-09-22T18:18:00+08:00","crosses_midnight":false,"actual_date":"2026-09-22"},{"date":"2026-09-22","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"變形卡夫卡 Franz","movie_id":"nwac-c13c0C0E621C","runtime_minutes":127,"version":"一般","time":"17:00","movie_url":"https://www.nwac.org.tw/tw/movies-content/c13c0C0E621C","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-22T17:00:00+08:00","end_estimated":"2026-09-22T19:19:00+08:00","crosses_midnight":false,"actual_date":"2026-09-22"},{"date":"2026-09-22","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"奧德賽 The Odyssey","movie_id":"nwac-FE5270c2E456","runtime_minutes":172,"version":"一般","time":"18:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/FE5270c2E456","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-22T18:30:00+08:00","end_estimated":"2026-09-22T21:34:00+08:00","crosses_midnight":false,"actual_date":"2026-09-22"},{"date":"2026-09-22","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"臥底情劫 Plainclothes","movie_id":"nwac-660D05bBEd83","runtime_minutes":96,"version":"一般","time":"19:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/660D05bBEd83","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-22T19:30:00+08:00","end_estimated":"2026-09-22T21:18:00+08:00","crosses_midnight":false,"actual_date":"2026-09-22"},{"date":"2026-09-23","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"被偷走的情歌 Power Ballad","movie_id":"nwac-8c75B5832a84","runtime_minutes":99,"version":"一般","time":"14:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/8c75B5832a84","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-23T14:30:00+08:00","end_estimated":"2026-09-23T16:21:00+08:00","crosses_midnight":false,"actual_date":"2026-09-23"},{"date":"2026-09-23","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"她復出的那天 The Day She Returns","movie_id":"nwac-59eaf0F2d15B","runtime_minutes":84,"version":"一般","time":"14:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/59eaf0F2d15B","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-23T14:50:00+08:00","end_estimated":"2026-09-23T16:26:00+08:00","crosses_midnight":false,"actual_date":"2026-09-23"},{"date":"2026-09-23","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"在世界的盡頭相遇 Meets the World","movie_id":"nwac-4Bb432393E6c","runtime_minutes":127,"version":"一般","time":"16:40","movie_url":"https://www.nwac.org.tw/tw/movies-content/4Bb432393E6c","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-23T16:40:00+08:00","end_estimated":"2026-09-23T18:59:00+08:00","crosses_midnight":false,"actual_date":"2026-09-23"},{"date":"2026-09-23","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"超拖樂團之我要幹大事啦！ Nirvanna the Band the Show the Movie","movie_id":"nwac-7aD6D092b173","runtime_minutes":100,"version":"一般","time":"17:00","movie_url":"https://www.nwac.org.tw/tw/movies-content/7aD6D092b173","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-23T17:00:00+08:00","end_estimated":"2026-09-23T18:52:00+08:00","crosses_midnight":false,"actual_date":"2026-09-23"},{"date":"2026-09-23","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"盜墓奇美拉 La Chimera","movie_id":"nwac-a3fe1152D0Ea","runtime_minutes":131,"version":"一般","time":"19:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/a3fe1152D0Ea","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-23T19:10:00+08:00","end_estimated":"2026-09-23T21:33:00+08:00","crosses_midnight":false,"actual_date":"2026-09-23"},{"date":"2026-09-23","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"怎麼不去死？ Why Wait, Just Die","movie_id":"nwac-db0b0744F445","runtime_minutes":96,"version":"一般","time":"19:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/db0b0744F445","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-23T19:30:00+08:00","end_estimated":"2026-09-23T21:18:00+08:00","crosses_midnight":false,"actual_date":"2026-09-23"},{"date":"2026-09-24","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"變形卡夫卡 Franz","movie_id":"nwac-c13c0C0E621C","runtime_minutes":127,"version":"一般","time":"14:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/c13c0C0E621C","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-24T14:30:00+08:00","end_estimated":"2026-09-24T16:49:00+08:00","crosses_midnight":false,"actual_date":"2026-09-24"},{"date":"2026-09-24","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"禍禍女 Mag Mag","movie_id":"nwac-10107B890BE6","runtime_minutes":113,"version":"一般","time":"14:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/10107B890BE6","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-24T14:50:00+08:00","end_estimated":"2026-09-24T16:55:00+08:00","crosses_midnight":false,"actual_date":"2026-09-24"},{"date":"2026-09-24","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"炎上 BURN","movie_id":"nwac-ef118b087229","runtime_minutes":103,"version":"一般","time":"17:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/ef118b087229","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-24T17:10:00+08:00","end_estimated":"2026-09-24T19:05:00+08:00","crosses_midnight":false,"actual_date":"2026-09-24"},{"date":"2026-09-24","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"盜墓奇美拉 La Chimera","movie_id":"nwac-a3fe1152D0Ea","runtime_minutes":131,"version":"一般","time":"17:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/a3fe1152D0Ea","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-24T17:30:00+08:00","end_estimated":"2026-09-24T19:53:00+08:00","crosses_midnight":false,"actual_date":"2026-09-24"},{"date":"2026-09-24","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"黑牢城 The Samurai and the Prisoner","movie_id":"nwac-B7228652ca8b","runtime_minutes":148,"version":"一般","time":"19:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/B7228652ca8b","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-24T19:20:00+08:00","end_estimated":"2026-09-24T22:00:00+08:00","crosses_midnight":false,"actual_date":"2026-09-24"},{"date":"2026-09-24","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"臥底情劫 Plainclothes","movie_id":"nwac-660D05bBEd83","runtime_minutes":96,"version":"一般","time":"20:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/660D05bBEd83","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-24T20:10:00+08:00","end_estimated":"2026-09-24T21:58:00+08:00","crosses_midnight":false,"actual_date":"2026-09-24"},{"date":"2026-09-25","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"奧德賽 The Odyssey","movie_id":"nwac-FE5270c2E456","runtime_minutes":172,"version":"一般","time":"11:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/FE5270c2E456","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-25T11:30:00+08:00","end_estimated":"2026-09-25T14:34:00+08:00","crosses_midnight":false,"actual_date":"2026-09-25"},{"date":"2026-09-25","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"變形卡夫卡 Franz","movie_id":"nwac-c13c0C0E621C","runtime_minutes":127,"version":"一般","time":"11:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/c13c0C0E621C","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-25T11:50:00+08:00","end_estimated":"2026-09-25T14:09:00+08:00","crosses_midnight":false,"actual_date":"2026-09-25"},{"date":"2026-09-25","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"怎麼不去死？ Why Wait, Just Die","movie_id":"nwac-db0b0744F445","runtime_minutes":96,"version":"一般","time":"14:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/db0b0744F445","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-25T14:20:00+08:00","end_estimated":"2026-09-25T16:08:00+08:00","crosses_midnight":false,"actual_date":"2026-09-25"},{"date":"2026-09-25","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"臥底情劫 Plainclothes","movie_id":"nwac-660D05bBEd83","runtime_minutes":96,"version":"一般","time":"14:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/660D05bBEd83","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-25T14:50:00+08:00","end_estimated":"2026-09-25T16:38:00+08:00","crosses_midnight":false,"actual_date":"2026-09-25"},{"date":"2026-09-25","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"我的爸爸是死刑犯 Me and My Condemned Father","movie_id":"nwac-4cFe49339c48","runtime_minutes":111,"version":"一般","time":"16:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/4cFe49339c48","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-25T16:20:00+08:00","end_estimated":"2026-09-25T18:23:00+08:00","crosses_midnight":false,"actual_date":"2026-09-25"},{"date":"2026-09-25","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"黑牢城 The Samurai and the Prisoner","movie_id":"nwac-B7228652ca8b","runtime_minutes":148,"version":"一般","time":"16:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/B7228652ca8b","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-25T16:50:00+08:00","end_estimated":"2026-09-25T19:30:00+08:00","crosses_midnight":false,"actual_date":"2026-09-25"},{"date":"2026-09-25","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"被偷走的情歌 Power Ballad","movie_id":"nwac-8c75B5832a84","runtime_minutes":99,"version":"一般","time":"19:00","movie_url":"https://www.nwac.org.tw/tw/movies-content/8c75B5832a84","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-25T19:00:00+08:00","end_estimated":"2026-09-25T20:51:00+08:00","crosses_midnight":false,"actual_date":"2026-09-25"},{"date":"2026-09-25","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"盜墓奇美拉 La Chimera","movie_id":"nwac-a3fe1152D0Ea","runtime_minutes":131,"version":"一般","time":"19:40","movie_url":"https://www.nwac.org.tw/tw/movies-content/a3fe1152D0Ea","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-25T19:40:00+08:00","end_estimated":"2026-09-25T22:03:00+08:00","crosses_midnight":false,"actual_date":"2026-09-25"},{"date":"2026-09-26","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"劇場版 吉伊卡哇 人魚島的秘密 CHIIKAWA THE MOVIE: THE SECRET OF THE MERMAID ISLAND","movie_id":"nwac-7BA0053eCFf2","runtime_minutes":100,"version":"一般","time":"11:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/7BA0053eCFf2","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-26T11:30:00+08:00","end_estimated":"2026-09-26T13:22:00+08:00","crosses_midnight":false,"actual_date":"2026-09-26"},{"date":"2026-09-26","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"怎麼不去死？ Why Wait, Just Die","movie_id":"nwac-db0b0744F445","runtime_minutes":96,"version":"一般","time":"12:00","movie_url":"https://www.nwac.org.tw/tw/movies-content/db0b0744F445","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-26T12:00:00+08:00","end_estimated":"2026-09-26T13:48:00+08:00","crosses_midnight":false,"actual_date":"2026-09-26"},{"date":"2026-09-26","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"盜墓奇美拉 La Chimera","movie_id":"nwac-a3fe1152D0Ea","runtime_minutes":131,"version":"一般","time":"13:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/a3fe1152D0Ea","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-26T13:30:00+08:00","end_estimated":"2026-09-26T15:53:00+08:00","crosses_midnight":false,"actual_date":"2026-09-26"},{"date":"2026-09-26","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"今晚我想來點棒的 Good Vibes Only","movie_id":"nwac-3E55bA1Aa8ea","runtime_minutes":90,"version":"一般","time":"14:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/3E55bA1Aa8ea","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-26T14:10:00+08:00","end_estimated":"2026-09-26T15:52:00+08:00","crosses_midnight":false,"actual_date":"2026-09-26"},{"date":"2026-09-26","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"黑牢城 The Samurai and the Prisoner","movie_id":"nwac-B7228652ca8b","runtime_minutes":148,"version":"一般","time":"16:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/B7228652ca8b","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-26T16:10:00+08:00","end_estimated":"2026-09-26T18:50:00+08:00","crosses_midnight":false,"actual_date":"2026-09-26"},{"date":"2026-09-26","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"驀然回首 Look Back","movie_id":"nwac-a42B7F4A7cB5","runtime_minutes":57,"version":"一般","time":"16:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/a42B7F4A7cB5","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-26T16:30:00+08:00","end_estimated":"2026-09-26T17:39:00+08:00","crosses_midnight":false,"actual_date":"2026-09-26"},{"date":"2026-09-26","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"變形卡夫卡 Franz","movie_id":"nwac-c13c0C0E621C","runtime_minutes":127,"version":"一般","time":"19:00","movie_url":"https://www.nwac.org.tw/tw/movies-content/c13c0C0E621C","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-26T19:00:00+08:00","end_estimated":"2026-09-26T21:19:00+08:00","crosses_midnight":false,"actual_date":"2026-09-26"},{"date":"2026-09-26","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"臥底情劫 Plainclothes","movie_id":"nwac-660D05bBEd83","runtime_minutes":96,"version":"一般","time":"19:20","movie_url":"https://www.nwac.org.tw/tw/movies-content/660D05bBEd83","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-26T19:20:00+08:00","end_estimated":"2026-09-26T21:08:00+08:00","crosses_midnight":false,"actual_date":"2026-09-26"},{"date":"2026-09-27","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"黑牢城 The Samurai and the Prisoner","movie_id":"nwac-B7228652ca8b","runtime_minutes":148,"version":"一般","time":"11:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/B7228652ca8b","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-27T11:30:00+08:00","end_estimated":"2026-09-27T14:10:00+08:00","crosses_midnight":false,"actual_date":"2026-09-27"},{"date":"2026-09-27","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"超拖樂團之我要幹大事啦！ Nirvanna the Band the Show the Movie","movie_id":"nwac-7aD6D092b173","runtime_minutes":100,"version":"一般","time":"11:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/7aD6D092b173","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-27T11:50:00+08:00","end_estimated":"2026-09-27T13:42:00+08:00","crosses_midnight":false,"actual_date":"2026-09-27"},{"date":"2026-09-27","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"怎麼不去死？ Why Wait, Just Die","movie_id":"nwac-db0b0744F445","runtime_minutes":96,"version":"一般","time":"13:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/db0b0744F445","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-27T13:50:00+08:00","end_estimated":"2026-09-27T15:38:00+08:00","crosses_midnight":false,"actual_date":"2026-09-27"},{"date":"2026-09-27","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"奧德賽 The Odyssey","movie_id":"nwac-FE5270c2E456","runtime_minutes":172,"version":"一般","time":"15:00","movie_url":"https://www.nwac.org.tw/tw/movies-content/FE5270c2E456","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-27T15:00:00+08:00","end_estimated":"2026-09-27T18:04:00+08:00","crosses_midnight":false,"actual_date":"2026-09-27"},{"date":"2026-09-27","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"盜墓奇美拉 La Chimera","movie_id":"nwac-a3fe1152D0Ea","runtime_minutes":131,"version":"一般","time":"15:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/a3fe1152D0Ea","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-27T15:50:00+08:00","end_estimated":"2026-09-27T18:13:00+08:00","crosses_midnight":false,"actual_date":"2026-09-27"},{"date":"2026-09-27","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"希望：末日血戰 Hope","movie_id":"nwac-01226bC2A4e3","runtime_minutes":156,"version":"一般","time":"18:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/01226bC2A4e3","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-27T18:30:00+08:00","end_estimated":"2026-09-27T21:18:00+08:00","crosses_midnight":false,"actual_date":"2026-09-27"},{"date":"2026-09-27","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"變形卡夫卡 Franz","movie_id":"nwac-c13c0C0E621C","runtime_minutes":127,"version":"一般","time":"18:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/c13c0C0E621C","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-27T18:50:00+08:00","end_estimated":"2026-09-27T21:09:00+08:00","crosses_midnight":false,"actual_date":"2026-09-27"},{"date":"2026-09-28","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"奧德賽 The Odyssey","movie_id":"nwac-FE5270c2E456","runtime_minutes":172,"version":"一般","time":"11:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/FE5270c2E456","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-28T11:30:00+08:00","end_estimated":"2026-09-28T14:34:00+08:00","crosses_midnight":false,"actual_date":"2026-09-28"},{"date":"2026-09-28","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"最後的作業 Your Last Homework","movie_id":"nwac-03756F3dD9bD","runtime_minutes":109,"version":"一般","time":"11:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/03756F3dD9bD","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-28T11:50:00+08:00","end_estimated":"2026-09-28T13:51:00+08:00","crosses_midnight":false,"actual_date":"2026-09-28"},{"date":"2026-09-28","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"盜墓奇美拉 La Chimera","movie_id":"nwac-a3fe1152D0Ea","runtime_minutes":131,"version":"一般","time":"14:10","movie_url":"https://www.nwac.org.tw/tw/movies-content/a3fe1152D0Ea","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-28T14:10:00+08:00","end_estimated":"2026-09-28T16:33:00+08:00","crosses_midnight":false,"actual_date":"2026-09-28"},{"date":"2026-09-28","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"劇場版 吉伊卡哇 人魚島的秘密 CHIIKAWA THE MOVIE: THE SECRET OF THE MERMAID ISLAND","movie_id":"nwac-7BA0053eCFf2","runtime_minutes":100,"version":"一般","time":"14:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/7BA0053eCFf2","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-28T14:50:00+08:00","end_estimated":"2026-09-28T16:42:00+08:00","crosses_midnight":false,"actual_date":"2026-09-28"},{"date":"2026-09-28","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"黑牢城 The Samurai and the Prisoner","movie_id":"nwac-B7228652ca8b","runtime_minutes":148,"version":"一般","time":"16:50","movie_url":"https://www.nwac.org.tw/tw/movies-content/B7228652ca8b","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-28T16:50:00+08:00","end_estimated":"2026-09-28T19:30:00+08:00","crosses_midnight":false,"actual_date":"2026-09-28"},{"date":"2026-09-28","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"怎麼不去死？ Why Wait, Just Die","movie_id":"nwac-db0b0744F445","runtime_minutes":96,"version":"一般","time":"17:30","movie_url":"https://www.nwac.org.tw/tw/movies-content/db0b0744F445","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-28T17:30:00+08:00","end_estimated":"2026-09-28T19:18:00+08:00","crosses_midnight":false,"actual_date":"2026-09-28"},{"date":"2026-09-28","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"變形卡夫卡 Franz","movie_id":"nwac-c13c0C0E621C","runtime_minutes":127,"version":"一般","time":"19:40","movie_url":"https://www.nwac.org.tw/tw/movies-content/c13c0C0E621C","version_raw":"一般","languages":[],"formats":[],"halls":["1廳"],"events":[],"version_unmapped":false,"start":"2026-09-28T19:40:00+08:00","end_estimated":"2026-09-28T21:59:00+08:00","crosses_midnight":false,"actual_date":"2026-09-28"},{"date":"2026-09-28","region":"高雄","region_id":"a07","cinema":"內惟藝術中心","theater_id":"t07731","movie":"臥底情劫 Plainclothes","movie_id":"nwac-660D05bBEd83","runtime_minutes":96,"version":"一般","time":"20:00","movie_url":"https://www.nwac.org.tw/tw/movies-content/660D05bBEd83","version_raw":"一般","languages":[],"formats":[],"halls":["2廳"],"events":[],"version_unmapped":false,"start":"2026-09-28T20:00:00+08:00","end_estimated":"2026-09-28T21:48:00+08:00","crosses_midnight":false,"actual_date":"2026-09-28"}]/*DATA_END*/;
+const GENERATED = /*GEN_START*/"9/17"/*GEN_END*/;
+const JSON_NAME = "kh_art_showtimes.json";
+
+const BUFFER_SAME = 15;   // 同館兩場至少留幾分鐘
+const BUFFER_MOVE = 35;   // 電影館（鹽埕）↔ 內惟（鼓山），輕軌／捷運加走路約 35 分
+const STORE_KEY = "khArtPlanner.picked.v1";
+const LIKE_KEY = "khArtPlanner.liked.v1";
+const VENUES = {
+  t07726:{name:"高雄市電影館", short:"電影館", color:"var(--kfa)"},
+  t07731:{name:"內惟藝術中心", short:"內惟", color:"var(--nwac)"},
+};
+const WEEK = ["日","一","二","三","四","五","六"];
+const $ = id => document.getElementById(id);
+
+const keyOf = s => [s.theater_id, s.movie_id, s.start, (s.halls||[]).join("")].join("|");
+let ALL = [], BY_KEY = new Map(), DATES = [], SOURCE = "";
+function prepare(data){
+  if(!Array.isArray(data)) throw new Error("JSON 最外層必須是陣列");
+  const rows = data.filter(s => s && s.movie && (s.start || (s.date && s.time)))
+    .map(s => ({...s, start: s.start || `${s.date}T${s.time}:00+08:00`}))
+    .sort((a,b) => a.start < b.start ? -1 : a.start > b.start ? 1 : 0);
+  if(!rows.length) throw new Error("檔案裡沒有可用的場次");
+  return rows;
+}
+
+// 台北時間的今天
+function todayTW(){
+  const d = new Date(Date.now() + 8*3600e3);
+  return d.toISOString().slice(0,10);
+}
+const TODAY = todayTW();
+const toDate = iso => new Date(iso);
+function hhmm(d){
+  const t = new Date(d.getTime() + 8*3600e3);
+  return String(t.getUTCHours()).padStart(2,"0")+":"+String(t.getUTCMinutes()).padStart(2,"0");
+}
+function dayLabel(ymd){
+  const [y,m,d] = ymd.split("-").map(Number);
+  const wd = new Date(Date.UTC(y,m-1,d)).getUTCDay();
+  return `${m}/${d}（${WEEK[wd]}）`;
+}
+function minText(m){
+  if(m < 60) return `${m} 分鐘`;
+  const h = Math.floor(m/60), r = m%60;
+  return r ? `${h} 小時 ${r} 分` : `${h} 小時`;
+}
+function escHtml(t){
+  return String(t??"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+// 「炎上 BURN」→ 中文主標 + 英文副標（找第一個以拉丁字母開頭、且前面有中日文的空白處）
+function splitTitle(t){
+  const m = t.match(/^(.*?[\u3000-\u9fff\uff00-\uffef）)])\s*([A-Za-z0-9][^\u3040-\u30ff\u4e00-\u9fff]*)$/);
+  return m ? [m[1].trim(), m[2].trim()] : [t, ""];
+}
+function titleHtml(t){
+  const [zh, en] = splitTitle(t);
+  return `<span class="title">${escHtml(zh)}${en ? `<span class="en">${escHtml(en)}</span>` : ""}</span>`;
+}
+const dateOf = s => s.actual_date || s.date;
+const isPast = s => toDate(s.start).getTime() < Date.now();
+
+/* ---------- 片單儲存 ---------- */
+function loadPicked(){
+  try{
+    const keys = JSON.parse(localStorage.getItem(STORE_KEY)) || [];
+    return keys.filter(k => BY_KEY.has(k));
+  }catch(e){ return []; }
+}
+function savePicked(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(PICKED)); }catch(e){}
+}
+let PICKED = [];
+const pickedList = () => PICKED.map(k => BY_KEY.get(k)).sort((a,b) => a.start < b.start ? -1 : 1);
+
+/* ---------- 衝突判斷 ---------- */
+function checkPair(a, b){
+  const aEnd = toDate(a.end_estimated || new Date(toDate(a.start).getTime()+120*60e3).toISOString());
+  const gap = Math.round((toDate(b.start) - aEnd) / 60000);
+  const same = a.theater_id === b.theater_id;
+  const need = same ? BUFFER_SAME : BUFFER_MOVE;
+  const to = VENUES[b.theater_id]?.name || b.cinema;
+  if(gap < 0) return {level:"bad", text:`與上一場重疊 ${minText(-gap)}，無法都看`};
+  if(gap < need) return {level:"warn", text: same
+    ? `只有 ${minText(gap)}空檔，同館建議至少留 ${BUFFER_SAME} 分鐘`
+    : `只有 ${minText(gap)}空檔，還要移動到${to}（建議留 ${BUFFER_MOVE} 分鐘）`};
+  return {level:"ok", text: same ? `空檔 ${minText(gap)}` : `空檔 ${minText(gap)}，需移動到${to}`};
+}
+// 這場若加進片單，會和已選的哪一場最嚴重地衝突
+function hitWith(s){
+  let worst = null;
+  const k = keyOf(s);
+  for(const p of pickedList()){
+    if(keyOf(p) === k || dateOf(p) !== dateOf(s)) continue;
+    const r = p.start <= s.start ? checkPair(p, s) : checkPair(s, p);
+    if(r.level === "ok") continue;
+    if(!worst || (r.level === "bad" && worst.level !== "bad")) worst = {...r, other:p};
+  }
+  return worst;
+}
+function groupByDay(list){
+  const g = {};
+  list.forEach(s => (g[dateOf(s)] ||= []).push(s));
+  return g;
+}
+
+/* ---------- Google 日曆連結 ---------- */
+function gcalUtc(d){ return d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,""); }
+function gcalLink(s){
+  const st = toDate(s.start);
+  const en = s.end_estimated ? toDate(s.end_estimated) : new Date(st.getTime()+120*60e3);
+  const v = VENUES[s.theater_id]?.name || s.cinema;
+  const details = [
+    (s.halls||[]).join("、"),
+    s.runtime_minutes ? `片長 ${s.runtime_minutes} 分鐘` : "",
+    "結束時間為估計值",
+    s.movie_url || ""
+  ].filter(Boolean).join("\n");
+  const p = new URLSearchParams({action:"TEMPLATE", text:s.movie, dates:`${gcalUtc(st)}/${gcalUtc(en)}`, location:v, details, ctz:"Asia/Taipei"});
+  return "https://calendar.google.com/calendar/render?" + p.toString();
+}
+
+/* ---------- 篩選狀態 ---------- */
+const state = { venue:"", date:"", movie:"", text:"" };
+
+function renderVenues(){
+  const opts = [["", "全部", null], ...Object.entries(VENUES).map(([id,v]) => [id, v.name, v.color])];
+  $("venues").innerHTML = opts.map(([id,name,c]) =>
+    `<button class="venue" data-v="${id}" aria-pressed="${state.venue===id}">${c?`<span class="dot" style="background:${c}"></span>`:""}${name}</button>`).join("");
+}
+function renderDays(){
+  const pool = ALL.filter(s => !state.venue || s.theater_id === state.venue);
+  const has = new Set(pool.map(dateOf));
+  const chips = DATES.filter(d => has.has(d)).map(d => {
+    const [y,m,dd] = d.split("-").map(Number);
+    const wd = new Date(Date.UTC(y,m-1,dd)).getUTCDay();
+    const cls = ["dchip", d < TODAY ? "past" : "", d === TODAY ? "today" : ""].join(" ");
+    return `<button class="${cls}" data-d="${d}" aria-pressed="${state.date===d}" aria-label="${dayLabel(d)}">
+      <span class="m">${d===TODAY ? "今天" : m+"月"}</span><span class="d num">${dd}</span><span class="w">週${WEEK[wd]}</span></button>`;
+  }).join("");
+  $("days").innerHTML = `<button class="dchip all" data-d="" aria-pressed="${state.date===""}">全部日期</button>` + chips;
+  const on = $("days").querySelector('[aria-pressed="true"]');
+  if(on && on.dataset.d && on.offsetParent){
+    const box = $("days");
+    box.scrollLeft = on.offsetLeft - box.offsetLeft - (box.clientWidth - on.offsetWidth) / 2;
+  }
+}
+function renderMovieSelect(){
+  const pool = ALL.filter(s => (!state.venue || s.theater_id === state.venue) && (!state.date || dateOf(s) === state.date));
+  const movies = [...new Set(pool.map(s => s.movie))].sort((a,b) => a.localeCompare(b, "zh-Hant"));
+  if(!movies.includes(state.movie)) state.movie = "";
+  $("fMovie").innerHTML = `<option value="">全部電影（${movies.length}）</option>` +
+    movies.map(m => `<option value="${escHtml(m)}"${m===state.movie?" selected":""}>${escHtml(splitTitle(m)[0])}</option>`).join("");
+}
+function matches(s){
+  const t = state.text.trim().toLowerCase();
+  return (!state.movie || s.movie === state.movie) && (!t || s.movie.toLowerCase().includes(t));
+}
+function currentResults(){
+  return ALL.filter(s =>
+    (!state.venue || s.theater_id === state.venue) &&
+    (!state.date || dateOf(s) === state.date) && matches(s));
+}
+
+/* ---------- 場次總表：每個廳一欄，同時段排在同一列 ---------- */
+const HALL_INFO = {
+  "t07731|1廳": {name:"內惟藝術中心 1 廳", en:"Neiwei Arts Center Reel ONE", order:1},
+  "t07731|2廳": {name:"內惟藝術中心 2 廳", en:"Neiwei Arts Center Reel TWO", order:2},
+  "t07726|三樓": {name:"高雄市電影館", en:"Kaohsiung Film Archive", order:3},
+};
+const BAND_WINDOW = 90;   // 同一列裡，最早與最晚開演相差不超過幾分鐘
+const hallKey = s => `${s.theater_id}|${(s.halls||[])[0]||""}`;
+function columnsFor(list){
+  // 固定顯示已知的廳（依影院篩選），再補上資料裡出現的其他廳
+  const fixed = Object.keys(HALL_INFO).filter(k => !state.venue || k.startsWith(state.venue + "|"));
+  const keys = [...new Set([...fixed, ...list.map(hallKey)])];
+  return keys.map(k => {
+    const [tid, hall] = k.split("|");
+    const info = HALL_INFO[k] || {name:`${VENUES[tid]?.name||tid}${hall?" "+hall:""}`, en:"", order:50};
+    return {key:k, tid, ...info};
+  }).sort((a,b) => a.order - b.order || a.name.localeCompare(b.name, "zh-Hant"));
+}
+// 依開演時間分列：同一列每個廳最多一場，且落在 BAND_WINDOW 內
+function buildBands(list){
+  const bands = [];
+  let cur = null;
+  list.forEach(s => {
+    const t = toDate(s.start).getTime();
+    const k = hallKey(s);
+    if(!cur || cur.cells[k] || (t - cur.t0) / 60000 >= BAND_WINDOW){
+      cur = {t0:t, cells:{}};
+      bands.push(cur);
+    }
+    cur.cells[k] = s;
+  });
+  return bands;
+}
+function cellHtml(s, picks, col, first){
+  const k = keyOf(s);
+  const on = picks.has(k);
+  const [zh, en] = splitTitle(s.movie);
+  const end = s.end_estimated ? hhmm(toDate(s.end_estimated)) : "";
+  const foot = [
+    s.runtime_minutes ? `<span class="num">${s.runtime_minutes} 分鐘</span>` : "",
+    ...(s.events||[]).map(e => `<span class="ev">${escHtml(e)}</span>`),
+  ].join("");
+  const hit = on ? null : hitWith(s);
+  const liked = LIKED.has(filmKey(s));
+  const cls = ["cell", isPast(s) ? "gone" : "", matches(s) ? "" : "dim"].join(" ");
+  return `<button class="${cls}" data-key="${escHtml(k)}" data-picked="${on?1:0}" data-hit="${hit?hit.level:""}" aria-pressed="${on}" aria-label="${hhmm(toDate(s.start))} ${escHtml(zh)}">
+    <span class="ct num">${hhmm(toDate(s.start))}${end?`<small>～${end}</small>`:""}<span class="ok" aria-hidden="true">✓</span></span>
+    <span class="cb"><span class="cn">${liked?'<span class="lv" aria-label="喜歡">♥</span>':""}${escHtml(zh)}</span>${en?`<span class="ce">${escHtml(en)}</span>`:""}<span class="cf">${foot}${hit?`<span class="hit${hit.level==="bad"?"":" w"}">${hit.level==="bad"?"會撞到":"太趕"}《${escHtml(splitTitle(hit.other.movie)[0])}》</span>`:""}</span></span>
+  </button>`;
+}
+function gridHtml(dayList, picks){
+  const cols = columnsFor(dayList);
+  const bands = buildBands(dayList);
+  const used = new Set(dayList.map(hallKey));
+  const head = cols.map((c,i) => `<div class="gh" style="grid-column:${i+1};grid-row:1"><b>${escHtml(c.name)}</b>${c.en?`<span>${escHtml(c.en)}</span>`:""}${used.has(c.key)?"":`<em>本日休映</em>`}</div>`).join("");
+  const rows = bands.length ? bands : [{cells:{}}];
+  const body = rows.map((b,r) => cols.map((c,i) => {
+    const pos = `grid-column:${i+1};grid-row:${r+2}`;
+    if(!used.has(c.key)){
+      // 整天休映：用一個長格子帶過
+      return r === 0 ? `<div class="cell empty off" style="grid-column:${i+1};grid-row:2 / span ${rows.length}"><span>今天沒有放映<br>換一天看看</span></div>` : "";
+    }
+    const s = b.cells[c.key];
+    return s ? cellHtml(s, picks, i, r===0).replace("<button ", `<button style="${pos}" `)
+             : `<div class="cell empty" style="${pos}" aria-hidden="true"></div>`;
+  }).join("")).join("");
+  return `<div class="gridscroll"><div class="grid" style="--cols:${cols.length}">${head}${body}</div></div>`;
+}
+function renderResults(){
+  const pool = ALL.filter(s =>
+    (!state.venue || s.theater_id === state.venue) &&
+    (!state.date || dateOf(s) === state.date));
+  const hits = pool.filter(matches).length;
+  const filtered = state.movie || state.text.trim();
+  $("count").textContent = (state.date ? `${dayLabel(state.date)}　` : "") +
+    (filtered ? `符合 ${hits} 場，共 ${pool.length} 場` : `${pool.length} 場`) +
+    "　點場次加入片單";
+  if(!pool.length || (filtered && !hits && !state.date)){
+    const closed = state.date && new Date(state.date+"T00:00:00Z").getUTCDay() === 1;
+    $("results").innerHTML = `<p class="empty"><strong>這天沒有場次</strong>${closed ? "兩館週一休館，換一天看看" : "換一天或換一間影院看看"}</p>`;
+    return;
+  }
+  const picks = new Set(PICKED);
+  const g = groupByDay(pool);
+  let days = Object.keys(g).sort();
+  // 全部日期 + 有篩選時，只列出有符合場次的日子
+  if(!state.date && filtered) days = days.filter(d => g[d].some(matches));
+  $("results").innerHTML = days.map(d => {
+    const [y,m,dd] = d.split("-").map(Number);
+    const wd = ["SUN","MON","TUE","WED","THU","FRI","SAT"][new Date(Date.UTC(y,m-1,dd)).getUTCDay()];
+    return `<section class="sheet">
+      <h3 class="sheethead"><span class="d num">${m}.${String(dd).padStart(2,"0")}</span><span class="w">${wd}</span>${d===TODAY?'<span class="t">今天</span>':""}</h3>
+      ${gridHtml(g[d], picks)}
+    </section>`;
+  }).join("");
+}
+function renderFind(){ renderVenues(); renderDays(); renderMovieSelect(); renderResults(); }
+
+$("venues").addEventListener("click", e => {
+  const b = e.target.closest(".venue"); if(!b) return;
+  state.venue = b.dataset.v; renderFind();
+});
+$("days").addEventListener("click", e => {
+  const b = e.target.closest(".dchip"); if(!b) return;
+  state.date = b.dataset.d; renderDays(); renderMovieSelect(); renderResults();
+});
+$("fMovie").addEventListener("change", e => { state.movie = e.target.value; renderResults(); });
+$("fText").addEventListener("input", e => { state.text = e.target.value; renderResults(); });
+$("results").addEventListener("click", e => {
+  const row = e.target.closest(".cell[data-key]"); if(!row) return;
+  const k = row.dataset.key;
+  const i = PICKED.indexOf(k);
+  if(i >= 0) PICKED.splice(i,1); else PICKED.push(k);
+  savePicked();
+  const sx = [...document.querySelectorAll("#results .gridscroll")].map(g => g.scrollLeft);
+  renderResults();
+  document.querySelectorAll("#results .gridscroll").forEach((g,j) => g.scrollLeft = sx[j] || 0);
+  document.querySelector(`#results .cell[data-key="${CSS.escape(k)}"]`)?.focus({preventScroll:true});
+  renderDock();
+});
+
+
+/* ============================================================
+   選電影
+   ============================================================ */
+const filmKey = s => splitTitle(s.movie)[0].replace(/\s+/g, "");
+let LIKED = new Set();
+let FILMS = [];
+const OPEN = new Set();
+const fState = {text:"", sort:"soon", liked:false, venue:""};
+function loadJson(k, d){ try{ return JSON.parse(localStorage.getItem(k)) ?? d; }catch(e){ return d; } }
+function saveJson(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+const saveLiked = () => saveJson(LIKE_KEY, [...LIKED]);
+
+function buildFilms(){
+  const m = new Map();
+  ALL.forEach(s => {
+    const k = filmKey(s);
+    let f = m.get(k);
+    if(!f){
+      const [zh, en] = splitTitle(s.movie);
+      f = {key:k, zh, en, url:s.movie_url || "", runtime:s.runtime_minutes, venues:new Set(), events:new Set(), shows:[]};
+      m.set(k, f);
+    }
+    const en = splitTitle(s.movie)[1];
+    if(en && (!f.en || en.length < f.en.length)) f.en = en;   // 取較短、較乾淨的英文名
+    if(!f.runtime && s.runtime_minutes) f.runtime = s.runtime_minutes;
+    f.venues.add(s.theater_id);
+    (s.events||[]).forEach(e => f.events.add(e));
+    f.shows.push(s);
+  });
+  FILMS = [...m.values()];
+  FILMS.forEach(f => f.shows.sort((a,b) => a.start < b.start ? -1 : 1));
+}
+const upcoming = f => f.shows.filter(s => !isPast(s));
+const pickedOf = f => { const p = new Set(PICKED); return f.shows.filter(s => p.has(keyOf(s))); };
+
+function filmMatches(f){
+  const t = fState.text.trim().toLowerCase();
+  if(t && !(f.zh + " " + f.en).toLowerCase().includes(t)) return false;
+  if(fState.liked && !LIKED.has(f.key)) return false;
+  if(fState.venue && !f.venues.has(fState.venue)) return false;
+  return true;
+}
+function sortFilms(list){
+  const last = f => (upcoming(f).at(-1) || f.shows.at(-1)).start;
+  const by = {
+    soon: (a,b) => (upcoming(b).length>0) - (upcoming(a).length>0) || (last(a) < last(b) ? -1 : 1),
+    few: (a,b) => (upcoming(b).length>0) - (upcoming(a).length>0) || upcoming(a).length - upcoming(b).length,
+    title: (a,b) => (upcoming(b).length>0) - (upcoming(a).length>0) || a.zh.localeCompare(b.zh, "zh-Hant"),
+    long: (a,b) => (upcoming(b).length>0) - (upcoming(a).length>0) || (a.runtime||999) - (b.runtime||999),
+  }[fState.sort];
+  return list.sort(by);
+}
+function shortWhen(s){
+  const [y,m,d] = dateOf(s).split("-").map(Number);
+  const wd = WEEK[new Date(Date.UTC(y,m-1,d)).getUTCDay()];
+  return `${m}/${d}（${wd}）`;
+}
+const venueLabel = s => s.theater_id === "t07731" ? `內惟藝術中心 ${(s.halls||[])[0]||""}`.trim() : (VENUES[s.theater_id]?.name || s.cinema);
+
+function filmHtml(f){
+  const up = upcoming(f);
+  const mine = pickedOf(f);
+  const liked = LIKED.has(f.key);
+  const open = OPEN.has(f.key);
+  const vnames = [...f.venues].map(v => VENUES[v]?.name || v);
+  const chips = [
+    f.runtime ? `<span class="chip num">${f.runtime} 分鐘</span>` : "",
+    ...vnames.map(n => `<span class="chip k">${escHtml(n)}</span>`),
+    ...[...f.events].map(e => `<span class="chip ev">${escHtml(e)}</span>`),
+  ].join("");
+  let state;
+  if(mine.length){
+    state = `<b>✓ 已選 ${mine.map(s => `${shortWhen(s)} ${hhmm(toDate(s.start))}`).join("、")}</b>`;
+  }else if(!up.length){
+    state = `已下檔（最後一場 ${shortWhen(f.shows.at(-1))}）`;
+  }else{
+    const lastDay = dateOf(up.at(-1));
+    const days = Math.round((new Date(lastDay+"T00:00:00Z") - new Date(TODAY+"T00:00:00Z")) / 864e5);
+    const urgent = up.length <= 2 || days <= 3;
+    state = `還有 ${up.length} 場，<span class="${urgent?"urgent":""}">最後一場 ${shortWhen(up.at(-1))} ${hhmm(toDate(up.at(-1).start))}</span>`;
+  }
+  const title = f.url
+    ? `<a class="ftitle" href="${escHtml(f.url)}" target="_blank" rel="noopener">${escHtml(f.zh)}</a>`
+    : `<span class="ftitle">${escHtml(f.zh)}</span>`;
+  const picks = new Set(PICKED);
+  const list = open ? `<ul class="shows">${f.shows.map(s => {
+      const k = keyOf(s), on = picks.has(k), past = isPast(s);
+      const hit = on || past ? null : hitWith(s);
+      const end = s.end_estimated ? hhmm(toDate(s.end_estimated)) : "";
+      const note = hit ? `<br><span class="${hit.level}">${hit.level==="bad"?"會撞到":"太趕："}《${escHtml(splitTitle(hit.other.movie)[0])}》${hhmm(toDate(hit.other.start))}</span>` : "";
+      const btn = past
+        ? `<button class="add" data-key="${escHtml(k)}" data-on="${on?1:0}" data-past="1" ${on?"":"disabled"}>${on?"已選 ✓":"已結束"}</button>`
+        : `<button class="add" data-key="${escHtml(k)}" data-on="${on?1:0}" data-hit="${hit?hit.level:""}">${on?"已選 ✓":"加入"}</button>`;
+      return `<li class="${past?"past":""}"><span class="t num">${shortWhen(s)}<small>${hhmm(toDate(s.start))}${end?"～"+end:""}</small></span>
+        <span class="i">${escHtml(venueLabel(s))}${note}</span>${btn}</li>`;
+    }).join("")}</ul>` : "";
+  return `<article class="film${up.length?"":" gone"}" data-liked="${liked?1:0}" data-film="${escHtml(f.key)}">
+    <div class="fhead">
+      <div class="fbody">
+        ${title}${f.en?`<span class="fen">${escHtml(f.en)}</span>`:""}
+        <div class="fmeta">${chips}</div>
+        <p class="fstate">${state}</p>
+        <button class="more" data-open="${escHtml(f.key)}" aria-expanded="${open}">${open?"收起場次":`看場次（${up.length ? `還有 ${up.length} 場，共 ${f.shows.length} 場` : `共 ${f.shows.length} 場`}）`}</button>
+      </div>
+      <button class="heart" data-like="${escHtml(f.key)}" aria-pressed="${liked}" aria-label="${liked?"取消喜歡":"喜歡"} ${escHtml(f.zh)}">♥</button>
+    </div>
+    ${list}
+  </article>`;
+}
+function renderFilms(){
+  const list = sortFilms(FILMS.filter(filmMatches));
+  $("filmCount").textContent = `${list.length} 部` + `（還有場次 ${list.filter(f => upcoming(f).length).length} 部）` + (LIKED.size ? `　已喜歡 ${LIKED.size} 部` : "");
+  $("films").innerHTML = list.length ? list.map(filmHtml).join("")
+    : `<p class="empty"><strong>沒有符合的電影</strong>${fState.liked && !LIKED.size ? "先按 ♥ 收藏想看的片" : "換個關鍵字或關掉篩選看看"}</p>`;
+  $("likeBadge").textContent = LIKED.size;
+  $("likeBadge").classList.toggle("hide", !LIKED.size);
+}
+
+$("films").addEventListener("click", e => {
+  const like = e.target.closest("[data-like]");
+  if(like){
+    const k = like.dataset.like;
+    LIKED.has(k) ? LIKED.delete(k) : LIKED.add(k);
+    saveLiked(); renderFilms();
+    return;
+  }
+  const more = e.target.closest("[data-open]");
+  if(more){
+    const k = more.dataset.open;
+    OPEN.has(k) ? OPEN.delete(k) : OPEN.add(k);
+    renderFilms();
+    return;
+  }
+  const add = e.target.closest(".add");
+  if(add){
+    togglePick(add.dataset.key);
+    renderFilms();
+  }
+});
+function togglePick(k){
+  const i = PICKED.indexOf(k);
+  if(i >= 0) PICKED.splice(i,1); else PICKED.push(k);
+  savePicked(); renderDock();
+}
+$("mText").addEventListener("input", e => { fState.text = e.target.value; renderFilms(); });
+$("mSort").addEventListener("change", e => { fState.sort = e.target.value; renderFilms(); });
+function bindToggle(id, fn){
+  $(id).addEventListener("click", () => {
+    const v = $(id).getAttribute("aria-pressed") !== "true";
+    $(id).setAttribute("aria-pressed", v); fn(v);
+  });
+}
+bindToggle("mLiked", v => { fState.liked = v; renderFilms(); });
+bindToggle("mKfa", v => { fState.venue = v ? "t07726" : ""; $("mNwac").setAttribute("aria-pressed", false); renderFilms(); });
+bindToggle("mNwac", v => { fState.venue = v ? "t07731" : ""; $("mKfa").setAttribute("aria-pressed", false); renderFilms(); });
+
+
+
+/* ---------- 我的片單 ---------- */
+function renderPlan(){
+  const list = pickedList();
+  if(!list.length){
+    $("plan").innerHTML = `<p class="empty"><strong>還沒有選任何場次</strong>到「找場次」點選想看的電影，這裡會檢查時間會不會撞到</p>`;
+    return;
+  }
+  const g = groupByDay(list);
+  $("plan").innerHTML = Object.keys(g).sort().map(d => {
+    const day = g[d];
+    let html = `<div class="day"><h2>${dayLabel(d)}${d===TODAY?"　今天":""}</h2>`;
+    day.forEach((s,i) => {
+      let bad = false;
+      if(i > 0){
+        const r = checkPair(day[i-1], s);
+        bad = r.level === "bad";
+        html += `<div class="gap ${r.level==="ok"?"":r.level}"><span class="rail"></span><span class="txt">${r.text}</span></div>`;
+      }
+      const v = VENUES[s.theater_id] || {name:s.cinema, color:"var(--pine)"};
+      const end = s.end_estimated ? hhmm(toDate(s.end_estimated)) : "";
+      const meta = [v.name, ...(s.halls||[]), s.runtime_minutes ? s.runtime_minutes+" 分鐘" : ""].filter(Boolean).join("　");
+      html += `<div class="slot${bad?" bad":""}">
+        <div class="rail num">${hhmm(toDate(s.start))}<span class="end">${end?"～"+end:""}</span></div>
+        <div class="card" style="--c:${v.color}">
+          ${titleHtml(s.movie)}
+          <span class="meta">${escHtml(meta)}</span>
+          <div class="acts">
+            <a href="${gcalLink(s)}" target="_blank" rel="noopener">加到 Google 日曆</a>
+            <button class="drop" data-key="${escHtml(keyOf(s))}">移除</button>
+          </div>
+        </div>
+      </div>`;
+    });
+    return html + "</div>";
+  }).join("");
+}
+$("plan").addEventListener("click", e => {
+  const b = e.target.closest(".drop"); if(!b) return;
+  PICKED = PICKED.filter(k => k !== b.dataset.key);
+  savePicked(); renderPlan(); renderDock();
+});
+
+/* ---------- 底部列 ---------- */
+function renderDock(){
+  const list = pickedList();
+  let bad = 0, warn = 0;
+  Object.values(groupByDay(list)).forEach(day => {
+    for(let i=1;i<day.length;i++){
+      const lv = checkPair(day[i-1], day[i]).level;
+      if(lv === "bad") bad++; else if(lv === "warn") warn++;
+    }
+  });
+  const n = list.length;
+  let txt = n ? `已選 ${n} 場` : "片單是空的";
+  if(bad) txt += `，${bad} 組時間重疊`; else if(warn) txt += `，${warn} 組偏趕`;
+  $("dockText").textContent = txt;
+  $("dockText").className = "n" + (bad ? " bad" : warn ? " warn" : "");
+  $("btnClear").disabled = !n;
+  $("btnShare").disabled = !n;
+  $("btnIcs").disabled = !n;
+  $("tabBadge").textContent = n;
+  $("tabBadge").classList.toggle("hide", !n);
+}
+
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on"), Math.max(2400, msg.length * 90));
+}
+
+/* ---------- 匯出 ---------- */
+let downloads = null, canExport = false;
+function browserDownload(name, text, type){
+  const url = URL.createObjectURL(new Blob([text], {type}));
+  const a = document.createElement("a");
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function icsEsc(t){ return String(t||"").replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\r?\n/g,"\\n"); }
+function icsUtc(d){ return d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,""); }
+function icsFold(line){
+  const enc = new TextEncoder(); const out = []; let cur = "", len = 0;
+  for(const ch of line){
+    const n = enc.encode(ch).length;
+    if(len + n > 75){ out.push(cur); cur = " " + ch; len = 1 + n; } else { cur += ch; len += n; }
+  }
+  out.push(cur); return out.join("\r\n");
+}
+function buildIcs(list){
+  const now = icsUtc(new Date());
+  const L = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//KhArtPlanner//TW//ZH","CALSCALE:GREGORIAN","METHOD:PUBLISH"];
+  list.forEach(s => {
+    const st = toDate(s.start);
+    const en = s.end_estimated ? toDate(s.end_estimated) : new Date(st.getTime()+120*60e3);
+    const v = VENUES[s.theater_id]?.name || s.cinema;
+    const desc = [(s.halls||[]).join("、"), s.runtime_minutes ? `片長 ${s.runtime_minutes} 分鐘` : "", "結束時間為估計值"].filter(Boolean).join("\n");
+    L.push("BEGIN:VEVENT", icsFold(`UID:${icsUtc(st)}-${s.movie_id}-${s.theater_id}@khartplanner`), `DTSTAMP:${now}`,
+      `DTSTART:${icsUtc(st)}`, `DTEND:${icsUtc(en)}`, icsFold(`SUMMARY:${icsEsc(s.movie)}`),
+      icsFold(`LOCATION:${icsEsc(v)}`), icsFold(`DESCRIPTION:${icsEsc(desc)}`));
+    if(s.movie_url) L.push(icsFold(`URL:${s.movie_url}`));
+    L.push("BEGIN:VALARM","ACTION:DISPLAY","TRIGGER:-PT30M", icsFold(`DESCRIPTION:${icsEsc(s.movie)} 快開演了`),"END:VALARM","END:VEVENT");
+  });
+  L.push("END:VCALENDAR");
+  return L.join("\r\n");
+}
+/* ============================================================
+   輸出行事曆：圖片（週曆／清單）＋ .ics ＋ CSV
+   ============================================================ */
+const IN_CLAUDE = !!window.claude?.use;
+if(IN_CLAUDE){
+  (async () => {
+    try{ downloads = await window.claude.use("downloads"); }catch(e){ downloads = null; }
+    canExport = !!downloads;
+    renderDock();
+  })();
+}else{
+  canExport = true;
+}
+
+// 存檔：Claude 裡走 downloads 能力，其他地方用瀏覽器下載
+async function saveFile(name, data, type){
+  if(IN_CLAUDE){
+    if(!downloads){ toast("這個檢視無法下載檔案"); return false; }
+    try{ await downloads.save({filename:name, data}); return true; }
+    catch(err){
+      if(err?.code === "declined") return false;
+      if(err?.code === "rate_limited"){ toast("已有下載視窗開啟中"); return false; }
+      if(err?.code === "rejected_extension" || err?.code === "extension_not_enabled"){ toast("這裡不支援這種檔案格式"); return false; }
+      toast("這個檢視無法下載檔案"); return false;
+    }
+  }
+  const blob = data instanceof Blob ? data : new Blob([data], {type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+  return true;
+}
+
+/* ---------- 圖片繪製 ---------- */
+const IMG_SIZES = {
+  portrait:[1080,1350], square:[1080,1080], story:[1080,1920], landscape:[1920,1080],
+};
+const IMG = {   // 圖片固定用淺色配色，分享出去才一致
+  paper:"#FBFAF7", card:"#FFFFFF", line:"#E4E2DC", ink:"#34403D", head:"#2E4A45",
+  muted:"#8A8983", pine:"#1F4D46", tint:"#EEF3F1", clash:"#B23B32",
+  venue:{ t07726:{bg:"#E4EEEA", bar:"#1F4D46", name:"高雄市電影館"}, t07731:{bg:"#ECE8F5", bar:"#5B4A86", name:"內惟藝術中心"} },
+};
+const ROUND = '"Huninn","jf open 粉圓 2.0","PingFang TC","Microsoft JhengHei",sans-serif';
+const SANS = '-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif';
+const fontR = px => `${px}px ${ROUND}`;
+const fontS = (px, w=400) => `${w} ${px}px ${SANS}`;
+const minOf = iso => { const t = hhmm(toDate(iso)).split(":"); return +t[0]*60 + +t[1]; };
+const endIso = s => s.end_estimated || new Date(toDate(s.start).getTime()+120*60e3).toISOString();
+const venueShort = s => s.theater_id === "t07731" ? `內惟 ${(s.halls||[])[0]||""}`.trim() : "電影館";
+
+function rr(ctx, x, y, w, h, r){
+  ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h);
+}
+// 中英混排換行：逐字量寬度，英文盡量在空白處斷
+function wrap(ctx, text, maxW, maxLines){
+  const out = []; let line = "";
+  const tokens = text.match(/[A-Za-z0-9'’:.,!?&\-]+\s*|\s+|./gu) || [];
+  for(const tk of tokens){
+    const test = line + tk;
+    if(ctx.measureText(test).width <= maxW || !line){ line = test; continue; }
+    out.push(line.trimEnd()); line = tk.trimStart();
+    if(out.length === maxLines) break;
+  }
+  if(out.length < maxLines && line) out.push(line.trimEnd());
+  if(out.length === maxLines && tokens.join("").length > out.join("").length + 1){
+    let last = out[maxLines-1];
+    while(last && ctx.measureText(last + "…").width > maxW) last = last.slice(0,-1);
+    out[maxLines-1] = last + "…";
+  }
+  // 單一 token 超寬時再硬切
+  return out.flatMap(l => {
+    if(ctx.measureText(l).width <= maxW) return [l];
+    const parts = []; let cur = "";
+    for(const ch of l){ if(ctx.measureText(cur+ch).width > maxW){ parts.push(cur); cur = ch; } else cur += ch; }
+    parts.push(cur); return parts;
+  }).slice(0, maxLines);
+}
+function newCanvas(W, H){
+  const c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = IMG.paper; ctx.fillRect(0, 0, W, H);
+  ctx.textBaseline = "alphabetic";
+  return [c, ctx];
+}
+function drawHeader(ctx, W, pad, title, sub){
+  ctx.fillStyle = IMG.head; ctx.font = fontR(W > 1500 ? 64 : 58);
+  ctx.fillText(title, pad, pad + 56);
+  ctx.fillStyle = IMG.muted; ctx.font = fontS(26);
+  ctx.fillText(sub, pad, pad + 100);
+  return pad + 136;
+}
+function drawFooter(ctx, W, H, pad, pageText){
+  ctx.font = fontS(22); ctx.fillStyle = IMG.muted;
+  // 影院圖例
+  let x = pad;
+  Object.values(IMG.venue).forEach(v => {
+    ctx.fillStyle = v.bar; rr(ctx, x, H - pad - 16, 16, 16, 8); ctx.fill();
+    ctx.fillStyle = IMG.muted; ctx.fillText(v.name, x + 24, H - pad);
+    x += 24 + ctx.measureText(v.name).width + 28;
+  });
+  ctx.textAlign = "right";
+  ctx.fillText(pageText, W - pad, H - pad);
+  ctx.textAlign = "left";
+}
+
+// 清單版：依日期排列，太長自動分頁
+function renderListImages(list, [W, H], rangeText){
+  const pad = W > 1500 ? 72 : 64;
+  const footerH = 70;
+  const measure = newCanvas(10, 10)[1];
+  const timeW = 190, gapX = 24;
+  const textW = W - pad*2 - timeW - gapX - 32;
+  // 先把內容排成「區塊」
+  const blocks = [];
+  const g = groupByDay(list);
+  Object.keys(g).sort().forEach(d => {
+    blocks.push({type:"day", d, h:74});
+    g[d].forEach((s, i) => {
+      measure.font = fontR(38);
+      const [zh, en] = splitTitle(s.movie);
+      const lines = wrap(measure, zh, textW, 2);
+      measure.font = fontS(22);
+      const enLines = en ? wrap(measure, en, textW, 1) : [];
+      let clash = null;
+      if(i > 0){ const r = checkPair(g[d][i-1], s); if(r.level !== "ok") clash = r; }
+      const h = 18 + lines.length*48 + enLines.length*30 + 40 + 18 + (clash ? 40 : 0);
+      blocks.push({type:"show", s, lines, enLines, clash, h});
+    });
+  });
+  const pages = []; let cur = [], y0 = 0;
+  const top = pad + 136, avail = H - top - pad - footerH;
+  blocks.forEach(b => {
+    const need = b.h + 14;
+    const lastIsDay = cur.length && cur.at(-1).type === "day";
+    if(y0 + need > avail && cur.length && !(lastIsDay && cur.length === 1)){
+      // 不讓日期標題孤零零留在頁尾
+      const carry = lastIsDay ? [cur.pop()] : [];
+      pages.push(cur); cur = [...carry]; y0 = carry.reduce((a,c) => a + c.h + 14, 0);
+      if(b.type === "show" && !carry.length){
+        const d = dateOf(b.s);
+        cur.push({type:"day", d, h:78, cont:true}); y0 += 92;
+      }
+    }
+    cur.push(b); y0 += need;
+  });
+  if(cur.length) pages.push(cur);
+
+  return pages.map((blocksOnPage, pi) => {
+    const [c, ctx] = newCanvas(W, H);
+    let y = drawHeader(ctx, W, pad, "我的片單", `${rangeText}　共 ${list.length} 場`);
+    blocksOnPage.forEach(b => {
+      if(b.type === "day"){
+        ctx.fillStyle = IMG.head; ctx.font = fontR(40);
+        ctx.fillText(dayLabel(b.d) + (b.cont ? "（續）" : ""), pad, y + 52);
+        ctx.strokeStyle = IMG.line; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(pad, y + 70); ctx.lineTo(W - pad, y + 70); ctx.stroke();
+      }else{
+        const s = b.s, v = IMG.venue[s.theater_id] || {bg:IMG.tint, bar:IMG.pine};
+        let cy = y;
+        if(b.clash){
+          ctx.fillStyle = b.clash.level === "bad" ? IMG.clash : "#A9641E";
+          ctx.font = fontS(22, 600);
+          ctx.fillText((b.clash.level === "bad" ? "⚠ " : "") + b.clash.text, pad + timeW + gapX, cy + 26);
+          cy += 40;
+        }
+        const ch = b.h - (b.clash ? 40 : 0);
+        ctx.fillStyle = IMG.card; rr(ctx, pad, cy, W - pad*2, ch, 26); ctx.fill();
+        ctx.strokeStyle = b.clash?.level === "bad" ? "#E7C3BF" : IMG.line; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = v.bg; rr(ctx, pad, cy, timeW, ch, 26); ctx.fill();
+        ctx.fillStyle = v.bar; ctx.font = fontR(46);
+        ctx.fillText(hhmm(toDate(s.start)), pad + 30, cy + 62);
+        if(s.end_estimated){
+          ctx.fillStyle = IMG.muted; ctx.font = fontS(24);
+          ctx.fillText("～" + hhmm(toDate(s.end_estimated)), pad + 30, cy + 96);
+        }
+        let ty = cy + 18;
+        const tx = pad + timeW + gapX;
+        ctx.fillStyle = IMG.ink; ctx.font = fontR(38);
+        b.lines.forEach(l => { ty += 48; ctx.fillText(l, tx, ty - 6); });
+        ctx.fillStyle = IMG.muted; ctx.font = fontS(22);
+        b.enLines.forEach(l => { ty += 30; ctx.fillText(l, tx, ty - 4); });
+        ty += 40;
+        ctx.fillStyle = v.bar; rr(ctx, tx, ty - 22, 14, 14, 7); ctx.fill();
+        ctx.fillStyle = IMG.muted; ctx.font = fontS(24);
+        const meta = [v.name || s.cinema, (s.halls||[])[0], s.runtime_minutes ? `${s.runtime_minutes} 分鐘` : ""].filter(Boolean).join("　");
+        ctx.fillText(meta, tx + 24, ty - 9);
+      }
+      y += b.h + 14;
+    });
+    drawFooter(ctx, W, H, pad, pages.length > 1 ? `${pi+1} / ${pages.length}` : "");
+    return c;
+  });
+}
+
+// 週曆版：一張一週，橫軸是日期、縱軸是時間
+function weekStartOf(ymd, startDow){
+  const d = new Date(ymd + "T00:00:00Z");
+  const back = (d.getUTCDay() - startDow + 7) % 7;
+  d.setUTCDate(d.getUTCDate() - back);
+  return d.toISOString().slice(0,10);
+}
+function addDays(ymd, n){
+  const d = new Date(ymd + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0,10);
+}
+function renderWeekImages(list, [W, H], startDow){
+  const weeks = new Map();
+  list.forEach(s => {
+    const k = weekStartOf(dateOf(s), startDow);
+    (weeks.get(k) || weeks.set(k, []).get(k)).push(s);
+  });
+  const keys = [...weeks.keys()].sort();
+  return keys.map((ws, wi) => {
+    const items = weeks.get(ws);
+    const [c, ctx] = newCanvas(W, H);
+    const pad = W > 1500 ? 64 : 48;
+    const we = addDays(ws, 6);
+    const [, m1, d1] = ws.split("-").map(Number), [, m2, d2] = we.split("-").map(Number);
+    const top = drawHeader(ctx, W, pad, "我的片單", `${m1}/${d1} – ${m2}/${d2}　這週 ${items.length} 場`);
+    const axisW = 78, headH = 78, footerH = 64;
+    const gx = pad + axisW, gy = top + headH;
+    const gw = W - pad - gx, gh = H - pad - footerH - gy;
+    // 沒有場次的日子欄寬縮小，把空間留給有場次的日子
+    const weights = [...Array(7)].map((_, i) => items.some(s => dateOf(s) === addDays(ws, i)) ? 1 : 0.42);
+    const unit = gw / weights.reduce((a,b) => a + b, 0);
+    const colX = i => gx + weights.slice(0, i).reduce((a,b) => a + b, 0) * unit;
+    const colWd = i => weights[i] * unit;
+    let lo = Math.min(...items.map(s => minOf(s.start)));
+    let hi = Math.max(...items.map(s => { const e = minOf(endIso(s)); return e < minOf(s.start) ? 24*60 : e; }));
+    lo = Math.max(0, Math.floor(lo/60)*60); hi = Math.min(24*60, Math.ceil(hi/60)*60);
+    if(hi - lo < 4*60) hi = Math.min(24*60, lo + 4*60);
+    const yOf = mm => gy + (mm - lo) / (hi - lo) * gh;
+
+    // 日期欄頭
+    for(let i = 0; i < 7; i++){
+      const d = addDays(ws, i);
+      const [, mm, dd] = d.split("-").map(Number);
+      const wd = new Date(d + "T00:00:00Z").getUTCDay();
+      const has = items.some(s => dateOf(s) === d);
+      const colW = colWd(i);
+      const cx = colX(i) + colW/2;
+      ctx.textAlign = "center";
+      if(d === TODAY){ ctx.fillStyle = IMG.pine; rr(ctx, colX(i) + 6, top + 2, colW - 12, headH - 12, 22); ctx.fill(); }
+      ctx.fillStyle = d === TODAY ? IMG.paper : has ? IMG.head : IMG.muted;
+      ctx.font = fontR(Math.min(W > 1500 ? 40 : 34, colW / 2.6));
+      ctx.fillText(`${mm}/${dd}`, cx, top + 38);
+      ctx.font = fontS(Math.min(22, colW / 3.2));
+      ctx.fillText(colW > 70 ? "週" + WEEK[wd] : WEEK[wd], cx, top + 64);
+      ctx.textAlign = "left";
+    }
+    // 底色與格線
+    ctx.fillStyle = IMG.card; rr(ctx, gx, gy, gw, gh, 24); ctx.fill();
+    ctx.strokeStyle = IMG.line; ctx.lineWidth = 2; ctx.stroke();
+    ctx.save(); rr(ctx, gx, gy, gw, gh, 24); ctx.clip();
+    for(let i = 1; i < 7; i++){
+      ctx.beginPath(); ctx.moveTo(colX(i), gy); ctx.lineTo(colX(i), gy + gh); ctx.stroke();
+    }
+    ctx.setLineDash([6, 8]); ctx.lineWidth = 1.5;
+    for(let t = lo + 60; t < hi; t += 60){
+      ctx.beginPath(); ctx.moveTo(gx, yOf(t)); ctx.lineTo(gx + gw, yOf(t)); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ctx.restore();
+    ctx.fillStyle = IMG.muted; ctx.font = fontS(22); ctx.textAlign = "right";
+    for(let t = lo; t <= hi; t += 60){
+      ctx.fillText(`${String(t/60).padStart(2,"0")}:00`, gx - 12, Math.min(gy + gh, Math.max(gy + 16, yOf(t) + 8)));
+    }
+    ctx.textAlign = "left";
+
+    // 場次方塊：同一天時間重疊的並排
+    for(let i = 0; i < 7; i++){
+      const d = addDays(ws, i);
+      const day = items.filter(s => dateOf(s) === d).sort((a,b) => a.start < b.start ? -1 : 1);
+      // 時間互相重疊的歸成一群，群內並排
+      day.forEach(s => { s._st = minOf(s.start); s._en = Math.max(s._st + 30, minOf(endIso(s)) || 24*60); });
+      const groups = [];
+      day.forEach(s => {
+        const g = groups.at(-1);
+        if(g && s._st < g.end){ g.items.push(s); g.end = Math.max(g.end, s._en); }
+        else groups.push({items:[s], end:s._en});
+      });
+      groups.forEach(g => {
+        const lanes = [];
+        g.items.forEach(s => {
+          let li = lanes.findIndex(end => end <= s._st);
+          if(li < 0){ li = lanes.length; lanes.push(s._en); } else lanes[li] = s._en;
+          s._lane = li;
+        });
+        g.items.forEach(s => {
+          s._n = lanes.length;
+          s._clash = g.items.some(o => o !== s && o._st < s._en && s._st < o._en);
+        });
+      });
+      day.forEach(s => {
+        const v = IMG.venue[s.theater_id] || {bg:IMG.tint, bar:IMG.pine};
+        const n = s._n, colW = colWd(i);
+        const bx = colX(i) + 6 + s._lane * ((colW - 12) / n);
+        const bw = (colW - 12) / n - (n > 1 ? 4 : 0);
+        const by = yOf(s._st) + 3, bh = Math.max(40, yOf(s._en) - yOf(s._st) - 6);
+        ctx.fillStyle = v.bg; rr(ctx, bx, by, bw, bh, 16); ctx.fill();
+        ctx.save(); rr(ctx, bx, by, bw, bh, 16); ctx.clip();
+        ctx.fillStyle = v.bar; ctx.fillRect(bx, by, 6, bh);
+        const ix = bx + 13, iw = bw - 20;
+        const fs = Math.max(15, Math.min(W < 1500 ? 24 : 27, iw / 3.3));
+        let yy = by + fs + 6;
+        ctx.fillStyle = v.bar; ctx.font = fontR(fs);
+        ctx.fillText(hhmm(toDate(s.start)), ix, yy);
+        ctx.fillStyle = IMG.ink; ctx.font = fontR(fs);
+        const lh = Math.round(fs * 1.28);
+        const maxLines = Math.max(1, Math.floor((bh - fs - 6 - (iw > 60 ? 34 : 8)) / lh));
+        wrap(ctx, splitTitle(s.movie)[0], iw, maxLines).forEach(l => { yy += lh; ctx.fillText(l, ix, yy); });
+        if(bh > 72 + lh && iw > 60){
+          ctx.fillStyle = IMG.muted; ctx.font = fontS(Math.min(20, fs * .78));
+          const vs = wrap(ctx, venueShort(s), iw, 1)[0] || "";
+          ctx.fillText(vs, ix, by + bh - 14);
+        }
+        ctx.restore();
+        if(s._clash){ ctx.strokeStyle = IMG.clash; ctx.lineWidth = 3; rr(ctx, bx, by, bw, bh, 16); ctx.stroke(); }
+      });
+    }
+    drawFooter(ctx, W, H, pad, keys.length > 1 ? `第 ${wi+1} / ${keys.length} 週` : "");
+    return {canvas:c, label:`${m1}/${d1} 週`};
+  });
+}
+
+/* ---------- 對話框 ---------- */
+let IMG_BLOBS = [];
+function imgRangeOptions(){
+  const list = pickedList();
+  const layout = $("imgLayout").value;
+  const days = [...new Set(list.map(dateOf))].sort();
+  const opts = [["", `全部（${list.length} 場）`]];
+  if(layout === "list"){
+    days.forEach(d => opts.push([d, `${dayLabel(d)}（${list.filter(s => dateOf(s) === d).length} 場）`]));
+  }else{
+    const sd = +$("imgWeekStart").value;
+    [...new Set(days.map(d => weekStartOf(d, sd)))].forEach(ws => {
+      const [, m1, d1] = ws.split("-").map(Number); const [, m2, d2] = addDays(ws, 6).split("-").map(Number);
+      opts.push([ws, `${m1}/${d1} – ${m2}/${d2}`]);
+    });
+  }
+  const keep = $("imgDay").value;
+  $("imgDay").innerHTML = opts.map(([v,t]) => `<option value="${v}">${t}</option>`).join("");
+  if(opts.some(([v]) => v === keep)) $("imgDay").value = keep;
+}
+async function buildImages(){
+  const list = pickedList();
+  const out = $("imgOut");
+  if(!list.length){ out.innerHTML = `<p class="empty">片單是空的</p>`; return; }
+  out.innerHTML = `<p class="dlgsub">產生中…</p>`;
+  try{ await Promise.race([document.fonts.load(fontR(40), "排片我的"), new Promise(r => setTimeout(r, 2500))]); }catch(e){}
+  const layout = $("imgLayout").value;
+  const size = IMG_SIZES[$("imgSize").value];
+  const range = $("imgDay").value;
+  let pages;
+  if(layout === "list"){
+    const sub = range ? list.filter(s => dateOf(s) === range) : list;
+    const days = [...new Set(sub.map(dateOf))].sort();
+    const rangeText = days.length === 1 ? dayLabel(days[0]) : `${dayLabel(days[0])} – ${dayLabel(days.at(-1))}`;
+    pages = renderListImages(sub, size, rangeText).map((canvas, i, arr) => ({canvas, label: arr.length > 1 ? `第 ${i+1} 張` : "清單"}));
+  }else{
+    const sd = +$("imgWeekStart").value;
+    const sub = range ? list.filter(s => weekStartOf(dateOf(s), sd) === range) : list;
+    pages = renderWeekImages(sub, size, sd);
+  }
+  IMG_BLOBS = await Promise.all(pages.map(p => new Promise(r => p.canvas.toBlob(b => r({blob:b, label:p.label, url:p.canvas.toDataURL("image/png")}), "image/png"))));
+  out.className = "imgout" + (size[0] > size[1] ? " wide" : "");
+  const stamp = new Date(Date.now() + 8*3600e3).toISOString().slice(5,10).replace("-","");
+  out.innerHTML = IMG_BLOBS.map((p, i) => `<figure>
+      <img src="${p.url}" alt="片單圖片 ${escHtml(p.label)}">
+      <figcaption><span>${escHtml(p.label)}　${size[0]}×${size[1]}</span>
+      <button class="linkbtn dl" data-i="${i}" data-name="我的片單_${stamp}_${layout}_${i+1}.png">儲存圖片</button></figcaption>
+    </figure>`).join("");
+  $("shareFoot").hidden = !(navigator.canShare && IMG_BLOBS.length &&
+    navigator.canShare({files:[new File([IMG_BLOBS[0].blob], "a.png", {type:"image/png"})]}));
+}
+function syncImgForm(){
+  const week = $("imgLayout").value === "week";
+  $("wkStartBox").classList.toggle("hide", !week);
+  if(week && $("imgSize").value !== "landscape" && !syncImgForm._touched) $("imgSize").value = "landscape";
+  if(!week && $("imgSize").value === "landscape" && !syncImgForm._touched) $("imgSize").value = "portrait";
+  imgRangeOptions();
+}
+function openExport(){
+  if(!pickedList().length) return;
+  syncImgForm._touched = false;
+  syncImgForm();
+  const dlg = $("exportDlg");
+  if(dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
+  buildImages();
+}
+$("btnShare").onclick = openExport;
+$("imgLayout").onchange = () => { syncImgForm(); buildImages(); };
+$("imgWeekStart").onchange = () => { imgRangeOptions(); buildImages(); };
+$("imgDay").onchange = buildImages;
+$("imgSize").onchange = () => { syncImgForm._touched = true; buildImages(); };
+$("exportClose").onclick = () => { const d = $("exportDlg"); d.close ? d.close() : d.removeAttribute("open"); };
+$("exportDlg").addEventListener("click", e => { if(e.target === $("exportDlg")) $("exportClose").click(); });
+$("imgOut").addEventListener("click", async e => {
+  const b = e.target.closest(".dl"); if(!b) return;
+  const p = IMG_BLOBS[+b.dataset.i]; if(!p) return;
+  if(await saveFile(b.dataset.name, p.blob, "image/png")) toast("圖片已儲存");
+});
+$("imgShare").onclick = async () => {
+  try{
+    const files = IMG_BLOBS.map((p, i) => new File([p.blob], `我的片單_${i+1}.png`, {type:"image/png"}));
+    await navigator.share({files, title:"我的片單"});
+  }catch(e){}
+};
+$("btnIcs").onclick = async () => {
+  const list = pickedList(); if(!list.length) return;
+  const name = `我的片單_${dateOf(list[0]).slice(5).replace("-","")}.ics`;
+  if(IN_CLAUDE){
+    // Claude 的預覽不允許下載 .ics，改提示使用下載下來的網頁檔
+    if(downloads){
+      try{ await downloads.save({filename:name, data:buildIcs(list)}); toast("已下載行事曆檔"); return; }
+      catch(err){ if(err?.code === "declined") return; }
+    }
+    toast("這裡無法下載 .ics，請用電腦上的網頁檔開啟再輸出，或在片單裡點「加到 Google 日曆」");
+    return;
+  }
+  if(await saveFile(name, buildIcs(list), "text/calendar;charset=utf-8")) toast("已下載行事曆檔，打開即可匯入");
+};
+
+/* ---------- 分頁 ---------- */
+const TABS = {films:["tabFilms","paneFilms"], find:["tabFind","paneFind"], list:["tabList","paneList"]};
+let CUR_TAB = "films";
+function renderCurrent(){
+  if(CUR_TAB === "films") renderFilms();
+  else if(CUR_TAB === "find") renderFind();
+  else renderPlan();
+}
+function showTab(which){
+  CUR_TAB = which;
+  Object.entries(TABS).forEach(([k,[tab,pane]]) => {
+    $(tab).setAttribute("aria-selected", k === which);
+    $(pane).classList.toggle("hide", k !== which);
+  });
+  renderCurrent();
+  window.scrollTo({top:0});
+}
+Object.entries(TABS).forEach(([k,[tab]]) => $(tab).onclick = () => showTab(k));
+$("btnClear").onclick = () => {
+  if(!confirm("確定要清空片單嗎？")) return;
+  PICKED = []; savePicked(); renderCurrent(); renderDock();
+};
+
+/* ---------- 開始 ---------- */
+function setData(rows, source){
+  ALL = rows;
+  BY_KEY = new Map(ALL.map(s => [keyOf(s), s]));
+  DATES = [...new Set(ALL.map(dateOf))].sort();
+  SOURCE = source;
+  if(!DATES.includes(state.date)){
+    state.date = DATES.includes(TODAY) ? TODAY : (DATES.find(d => d >= TODAY) || DATES[DATES.length-1] || "");
+  }
+  PICKED = loadPicked();
+  buildFilms();
+  LIKED = new Set(loadJson(LIKE_KEY, []));   // 保留舊片的喜歡，換資料後若再上映仍有效
+  $("dataInfo").textContent = DATES.length
+    ? `${ALL.length} 場　${dayLabel(DATES[0])} ～ ${dayLabel(DATES[DATES.length-1])}　${SOURCE}`
+    : "目前沒有場次資料";
+  renderFind(); renderDock();
+  renderCurrent();
+}
+
+// 換資料：選一個爬蟲產生的 JSON
+$("fileJson").addEventListener("change", async e => {
+  const f = e.target.files[0]; e.target.value = "";
+  if(!f) return;
+  try{
+    const rows = prepare(JSON.parse(await f.text()));
+    setData(rows, `來源：${f.name}`);
+    toast(`已載入 ${rows.length} 場`);
+  }catch(err){
+    toast(`無法讀取 ${f.name}：${err.message}`);
+  }
+});
+
+// 1) 先用內嵌資料畫出來
+try{ setData(prepare(DATA), `資料更新 ${GENERATED}`); }
+catch(e){ setData([], ""); }
+
+// 2) 放在網站伺服器上時，若同資料夾有 kh_art_showtimes.json，自動改用最新的
+if(!IN_CLAUDE && location.protocol.startsWith("http")){
+  fetch(JSON_NAME, {cache:"no-store"})
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(d => {
+      const rows = prepare(d);
+      setData(rows, `來源：${JSON_NAME}`);
+    })
+    .catch(() => {});
+}
+</script>
+</body>
+</html>

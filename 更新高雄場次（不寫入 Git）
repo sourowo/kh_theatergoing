@@ -1,0 +1,89 @@
+name: 更新高雄場次（不寫入 Git）
+
+on:
+  schedule:
+    # 台灣時間每月 25 號 16:07
+    - cron: "7 16 25 * *"
+      timezone: "Asia/Taipei"
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-kh-showtimes
+  cancel-in-progress: false
+
+jobs:
+  scrape-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    env:
+      DATA_FILE: kh_art_showtimes.json
+      RELEASE_TAG: showtimes-data
+
+    steps:
+      - name: 取得爬蟲程式
+        uses: actions/checkout@v4
+
+      - name: 安裝 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: 安裝相依套件
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install requests beautifulsoup4 lxml
+          fi
+
+      - name: 爬取高雄市電影館與內惟藝術中心場次
+        run: python -u kh_art_cinema_scraper.py -o "$DATA_FILE"
+
+      - name: 檢查產出並記錄更新時間
+        run: |
+          python -u -c "
+          import json, os, datetime
+          f = os.environ['DATA_FILE']
+          data = json.load(open(f, encoding='utf-8-sig'))
+          assert isinstance(data, list) and data, f'{f} 是空的或格式不正確'
+          days = sorted({d.get('actual_date') or d['date'] for d in data})
+          meta = {'updated': datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%dT%H:%M:%SZ'),
+                  'count': len(data), 'first_date': days[0], 'last_date': days[-1]}
+          json.dump(meta, open('updated.json', 'w', encoding='utf-8'), ensure_ascii=False)
+          print(f\"{len(data)} 場，{days[0]} ～ {days[-1]}\")
+          "
+
+      - name: 建立固定資料 Release（首次才會執行）
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$RELEASE_TAG" >/dev/null 2>&1 \
+            || gh release create "$RELEASE_TAG" --title "最新場次資料" --notes "由排程自動更新；此檔案不寫入 Git 歷史。"
+
+      - name: 覆寫 Release 資料
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$RELEASE_TAG" "$DATA_FILE" updated.json --clobber
+
+      # 網頁讀的是這個分支。每次都是全新的單一 commit 並強制覆蓋，
+      # 不會累積歷史，也不會動到 main（Pages 仍由 main 提供）。
+      - name: 同步到 data 分支（給網頁讀）
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/pub"
+          cp "$DATA_FILE" updated.json "$RUNNER_TEMP/pub/"
+          cd "$RUNNER_TEMP/pub"
+          git init -q -b data
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -q -m "場次資料 $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" HEAD:data
+          echo "已同步到 data 分支"

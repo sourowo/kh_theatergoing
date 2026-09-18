@@ -1377,15 +1377,43 @@ $("fileJson").addEventListener("change", async e => {
 try{ setData(prepare(DATA), `資料更新 ${GENERATED}`); }
 catch(e){ setData([], ""); }
 
-// 2) 放在網站伺服器上時，若同資料夾有 kh_art_showtimes.json，自動改用最新的
+// 2) 從 data 分支讀最新資料（由排程每月更新，不寫進 Git 歷史）
+const REPO = "sourowo/kh_theatergoing";
+const DATA_URL = `https://raw.githubusercontent.com/${REPO}/data/${JSON_NAME}`;
+const META_URL = `https://raw.githubusercontent.com/${REPO}/data/updated.json`;
+
+function stampOf(iso){
+  const d = new Date(iso);
+  if(isNaN(d)) return "";
+  const t = new Date(d.getTime() + 8*3600e3);
+  return `${t.getUTCMonth()+1}/${t.getUTCDate()} ${String(t.getUTCHours()).padStart(2,"0")}:${String(t.getUTCMinutes()).padStart(2,"0")}`;
+}
+async function grab(url){
+  const r = await fetch(url, {cache:"no-store"});
+  if(!r.ok) throw new Error(r.status);
+  return r.json();
+}
 if(!IN_CLAUDE && location.protocol.startsWith("http")){
-  fetch(JSON_NAME, {cache:"no-store"})
-    .then(r => r.ok ? r.json() : Promise.reject())
-    .then(d => {
-      const rows = prepare(d);
-      setData(rows, `來源：${JSON_NAME}`);
-    })
-    .catch(() => {});
+  (async () => {
+    // 先讀 data 分支的最新資料，讀不到才用同資料夾的檔案（本機測試用）
+    for(const [url, metaUrl] of [[DATA_URL, META_URL], [JSON_NAME, null]]){
+      try{
+        const rows = prepare(await grab(url));
+        let label = `來源：${JSON_NAME}`;
+        if(metaUrl){
+          label = "最新場次";
+          try{
+            const m = await grab(metaUrl);
+            const when = stampOf(m.updated);
+            if(when) label = `資料更新 ${when}`;
+          }catch(e){}
+        }
+        setData(rows, label);
+        return;
+      }catch(e){ /* 換下一個來源 */ }
+    }
+    console.info("讀不到最新場次，顯示網頁內建的資料");
+  })();
 }
 </script>
 </body>

@@ -1,0 +1,27 @@
+[
+  {
+    "date": "2026-10-18",
+    "region": "高雄",
+    "region_id": "a07",
+    "cinema": "高雄市電影館",
+    "theater_id": "t07726",
+    "movie": "特別放映｜比如父子 My Father's Son（10/18 現場免費索票與放映）",
+    "movie_id": "kfa-1c259582975a",
+    "runtime_minutes": 98,
+    "version": "一般",
+    "time": "16:10",
+    "movie_url": "https://kfa.kcg.gov.tw/tw/movies-content/1c259582975a",
+    "version_raw": "一般",
+    "languages": [],
+    "formats": [],
+    "halls": [
+      "三樓"
+    ],
+    "events": [],
+    "version_unmapped": false,
+    "start": "2026-10-18T16:10:00+08:00",
+    "end_estimated": "2026-10-18T18:00:00+08:00",
+    "crosses_midnight": false,
+    "actual_date": "2026-10-18"
+  }
+]
